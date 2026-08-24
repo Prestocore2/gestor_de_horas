@@ -1,0 +1,3061 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Horas Pro 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF.js para ler comprovativos automaticamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        office: '#2563eb', 
+                        vacation: '#f59e0b',
+                        compensation: '#8b5cf6',
+                        absence: '#64748b',
+                        attestation: '#06b6d4',
+                        compensationPeriod: '#ec4899',
+                        holiday: '#ef4444',
+                        suspensao: '#94a3b8',
+                        plan: '#3b82f6'
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            /* MODO ESCURO PADRÃO */
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #141b2d;
+            --bg-card-hover: #1a2340;
+            --border-glow: rgba(99, 102, 241, 0.15);
+            --border-glow-hover: rgba(99, 102, 241, 0.35);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #6366f1;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --glow-blue: 0 0 20px rgba(99, 102, 241, 0.15);
+            --glow-purple: 0 0 20px rgba(139, 92, 246, 0.15);
+            --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.15);
+            --bg-calendar-day: rgba(20, 27, 45, 0.6);
+            --bg-input: rgba(15, 23, 42, 0.8);
+            --border-input: rgba(99, 102, 241, 0.1);
+            
+            --bg-kpi-1: linear-gradient(135deg, #141b2d 0%, #1a1f3a 100%);
+            --bg-kpi-2: linear-gradient(135deg, #141b2d 0%, #162040 100%);
+            --bg-kpi-3: linear-gradient(135deg, #141b2d 0%, #1f1640 100%);
+            --bg-kpi-4: linear-gradient(135deg, #141b2d 0%, #0f1a2e 100%);
+            --bg-simulator: linear-gradient(135deg, #141b2d 0%, #162040 50%, #1a1f3a 100%);
+            --bg-file-actions: rgba(17, 24, 39, 0.8);
+            --text-white-kpi: #ffffff;
+            
+            --bg-modal-overlay: rgba(10, 14, 26, 0.95);
+            --bg-modal-content: #141b2d;
+            --border-modal: rgba(99, 102, 241, 0.15);
+            
+            --bg-weekend-blocked: rgba(10, 14, 26, 0.5);
+            --bg-plan-day: rgba(99, 102, 241, 0.15);
+            
+            --text-aurora-btn: #818cf8;
+            --bg-aurora-btn: rgba(99, 102, 241, 0.1);
+            --border-aurora-btn: rgba(99, 102, 241, 0.15);
+            
+            --bg-chart-center: linear-gradient(135deg, #141b2d 0%, #1a2340 100%);
+        }
+        
+        /* MODO CLARO (quando html não tem a classe .dark) */
+        html:not(.dark) {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-card-hover: #eff6ff;
+            --border-glow: rgba(99, 102, 241, 0.08);
+            --border-glow-hover: rgba(99, 102, 241, 0.2);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-rose: #ef4444;
+            --accent-amber: #f59e0b;
+            --glow-blue: 0 4px 12px rgba(99, 102, 241, 0.05);
+            --glow-purple: 0 4px 12px rgba(139, 92, 246, 0.05);
+            --glow-emerald: 0 4px 12px rgba(16, 185, 129, 0.05);
+            --bg-calendar-day: rgba(255, 255, 255, 0.9);
+            --bg-input: #ffffff;
+            --border-input: rgba(99, 102, 241, 0.15);
+            
+            --bg-kpi-1: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            --bg-kpi-2: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+            --bg-kpi-3: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+            --bg-kpi-4: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%);
+            --bg-simulator: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #eff6ff 100%);
+            --bg-file-actions: rgba(241, 245, 249, 0.9);
+            --text-white-kpi: #0f172a;
+            
+            --bg-modal-overlay: rgba(241, 245, 249, 0.95);
+            --bg-modal-content: #ffffff;
+            --border-modal: rgba(99, 102, 241, 0.1);
+            
+            --bg-weekend-blocked: rgba(148, 163, 184, 0.12);
+            --bg-plan-day: rgba(59, 130, 246, 0.06);
+            
+            --text-aurora-btn: #4f46e5;
+            --bg-aurora-btn: rgba(79, 70, 229, 0.08);
+            --border-aurora-btn: rgba(79, 70, 229, 0.2);
+            
+            --bg-chart-center: linear-gradient(135deg, #f1f5f9 0%, #ffffff 100%);
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 20% -20%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 0%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 80% at 50% 100%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        /* Modo Claro */
+        .light-mode body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        .aurora-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.3), var(--glow-blue);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .aurora-card:hover {
+            border-color: var(--border-glow-hover);
+            box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4), 0 0 30px rgba(99, 102, 241, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        .kpi-card-1 { background: var(--bg-kpi-1) !important; }
+        .kpi-card-2 { background: var(--bg-kpi-2) !important; }
+        .kpi-card-3 { background: var(--bg-kpi-3) !important; }
+        .kpi-card-4 { background: var(--bg-kpi-4) !important; }
+        .simulator-panel-bg { background: var(--bg-simulator) !important; }
+        .file-actions-bg { background: var(--bg-file-actions) !important; }
+        
+        .dark .aurora-card,
+        .aurora-card {
+            border-color: var(--border-glow);
+        }
+
+        .calendar-day { 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            position: relative; 
+            min-height: 70px;
+            border-radius: 1.25rem;
+            background: var(--bg-calendar-day);
+            border: 1px solid var(--border-glow);
+        }
+        @media (min-width: 768px) {
+            .calendar-day {
+                min-height: 110px;
+            }
+        }
+        
+        .calendar-day:not(.pointer-events-none):hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.2), 0 0 16px rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.3) !important;
+            background: var(--bg-card-hover) !important;
+            z-index: 20; 
+        }
+        
+        .today { 
+            border: 2px solid #6366f1 !important; 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%) !important;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15), inset 0 0 20px rgba(99, 102, 241, 0.05) !important;
+        }
+        .dark .today { 
+            border: 2px solid #6366f1 !important;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%) !important;
+        }
+        
+        .weekend-blocked { 
+            background: var(--bg-weekend-blocked) !important; 
+            cursor: default; 
+            opacity: 0.8; 
+            pointer-events: none;
+            border-color: transparent !important;
+        }
+        .dark .weekend-blocked { 
+            background: var(--bg-weekend-blocked) !important; 
+            opacity: 0.25; 
+        }
+        
+        .weekend-unlocked { 
+            background: rgba(245, 158, 11, 0.05); 
+            cursor: pointer; 
+            border: 1px dashed rgba(245, 158, 11, 0.3) !important; 
+        }
+        .dark .weekend-unlocked { 
+            background: rgba(245, 158, 11, 0.03); 
+            border: 1px dashed rgba(245, 158, 11, 0.25) !important; 
+        }
+        .weekend-unlocked:hover { 
+            border-color: #f59e0b !important;
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .modal { 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            backdrop-filter: blur(24px); 
+        }
+        
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-panel:hover {
+            border-color: var(--border-glow-hover);
+            box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.08);
+        }
+        .dark .glass-panel {
+            background: var(--bg-card);
+            border-color: var(--border-glow);
+        }
+
+        button, select, textarea { 
+            border-radius: 0.875rem; 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        input {
+            border-radius: 0.875rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+            border-color: rgba(99, 102, 241, 0.5) !important;
+        }
+        
+        .pulse-animation { animation: pulse 2.5s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        .flash-highlight { animation: flash 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes flash {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        
+        /* Animação de entrada */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+            animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Glow border animado para cards de destaque */
+        @keyframes glowPulse {
+            0%, 100% { border-color: rgba(99, 102, 241, 0.15); }
+            50% { border-color: rgba(99, 102, 241, 0.3); }
+        }
+        .glow-border-animated {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+        
+        /* Botões Aurora */
+        .aurora-btn {
+            background: var(--bg-aurora-btn) !important;
+            border: 1px solid var(--border-aurora-btn) !important;
+            color: var(--text-aurora-btn) !important;
+            backdrop-filter: blur(8px);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.625rem;
+        }
+        .aurora-btn:hover {
+            background: var(--bg-aurora-btn);
+            opacity: 0.85;
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .chart-center-bg {
+            background: var(--bg-chart-center) !important;
+        }
+        
+        /* Input Aurora */
+        .aurora-input {
+            background: var(--bg-input) !important;
+            border: 1px solid var(--border-input) !important;
+            color: var(--text-primary) !important;
+            font-weight: 600;
+        }
+        .aurora-input::placeholder {
+            color: var(--text-muted) !important;
+        }
+        .aurora-input:focus {
+            border-color: rgba(99, 102, 241, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+        }
+        
+        /* Modais Aurora */
+        .modal-overlay {
+            background: var(--bg-modal-overlay) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+        }
+        .modal-content {
+            background: var(--bg-modal-content) !important;
+            border: 1px solid var(--border-modal) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* --- DENSIDADE DE VISUALIZAÇÃO --- */
+        body.layout-pocket {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        body.layout-pocket .container {
+            max-width: 80rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        body.layout-pocket header {
+            margin-bottom: 1.5rem;
+        }
+        body.layout-pocket header h1 {
+            font-size: 2.25rem !important;
+        }
+        body.layout-pocket #importantNoticePanel {
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+        }
+        body.layout-pocket #importantNoticePanel p {
+            display: none;
+        }
+        body.layout-pocket .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+            gap: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        body.layout-pocket .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 p.text-4xl {
+            font-size: 1.875rem !important;
+        }
+        body.layout-pocket .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 > div {
+            padding: 1rem !important;
+            border-radius: 1.25rem !important;
+        }
+        body.layout-pocket .grid-cols-1.lg\:grid-cols-3 {
+            gap: 1.5rem !important;
+            margin-bottom: 2rem !important;
+        }
+        body.layout-pocket .calendar-day {
+            padding: 0.35rem !important;
+            min-height: 52px !important;
+        }
+        body.layout-pocket .calendar-day span.text-xs {
+            font-size: 0.65rem !important;
+        }
+        body.layout-pocket .calendar-day i {
+            font-size: 8px !important;
+        }
+        body.layout-pocket .lg\:col-span-2.glass-panel {
+            padding: 1.25rem !important;
+            border-radius: 1.5rem !important;
+        }
+        body.layout-pocket .space-y-8 > div {
+            padding: 1.25rem !important;
+            border-radius: 1.5rem !important;
+        }
+        body.layout-pocket #settingsSection > div {
+            padding: 1.5rem !important;
+            border-radius: 1.5rem !important;
+        }
+        body.layout-pocket #senacLegendPanel {
+            padding: 1.5rem !important;
+            border-radius: 1.5rem !important;
+            margin-bottom: 2rem !important;
+        }
+
+        body.layout-detailed {
+            letter-spacing: 0.015em;
+        }
+        body.layout-detailed .glass-panel {
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 30px rgba(99, 102, 241, 0.08);
+            border-width: 2px;
+        }
+        body.layout-detailed .calendar-day {
+            min-height: 85px !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.layout-detailed .calendar-day:hover {
+            transform: scale(1.03) translateY(-2px);
+            z-index: 10;
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('ServiceWorker registrado com sucesso.', registration))
+                    .catch(error => console.log('Falha ao registrar o ServiceWorker.', error));
+            });
+        }
+    </script>
+</head>
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans leading-relaxed transition-colors duration-500">
+
+    <div class="container mx-auto px-4 py-8 max-w-7xl relative">
+        
+        <!-- HEADER -->
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <h1 class="text-4xl lg:text-5xl font-black tracking-tight uppercase bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">GESTOR DE HORAS <span class="text-[9px] px-2.5 py-1 bg-indigo-500/15 text-indigo-300 font-black rounded-full uppercase tracking-widest border border-indigo-500/25">PRO</span></h1>
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.35em] mt-2.5 italic pl-0.5">Gestor de Horas Universal © 2026</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
+                <!-- Ações de Arquivo -->
+                <div class="flex flex-wrap items-center justify-center gap-1.5 p-1.5 file-actions-bg rounded-2xl border border-indigo-500/10 backdrop-blur-sm w-full sm:w-auto">
+                    <button id="saveBackupBtn" class="aurora-btn px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center" title="Faz download de um ficheiro .json com todos os seus dados para guardar no computador">
+                        <i class="fas fa-download sm:mr-1.5 text-amber-400"></i> <span class="hidden sm:inline">Backup</span>
+                    </button>
+                    <button id="importBtn" class="aurora-btn px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center" title="Importar um ficheiro .json ou .csv de backup para restaurar os dados">
+                        <i class="fas fa-file-import sm:mr-1.5 text-emerald-400"></i> <span class="hidden sm:inline">Importar</span>
+                    </button>
+                    <button id="clearBtn" class="aurora-btn px-3 py-2.5 sm:px-2.5 rounded-xl flex items-center hover:!bg-rose-500/20 hover:!border-rose-500/30 hover:!text-rose-400" title="Apaga TODOS os registos do calendário. Recomenda-se fazer backup antes.">
+                        <i class="fas fa-trash-alt text-rose-400"></i>
+                    </button>
+                </div>
+                
+                <!-- Ações Principais -->
+                <div class="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+                    <button id="saveAllBtn" class="px-4 py-3 sm:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl flex items-center shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider pulse-animation" title="Salva todos os dados no navegador (localStorage)">
+                        <i class="fas fa-save sm:mr-2"></i> <span class="hidden sm:inline">Guardar Tudo</span>
+                    </button>
+                    <button id="exportBtn" class="px-4 py-3 sm:px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl flex items-center shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider" title="Gera um relatório CSV com os dados filtrados por período">
+                        <i class="fas fa-file-export sm:mr-2"></i> <span class="hidden sm:inline">Relatório</span>
+                    </button>
+                    <button id="settingsBtn" class="aurora-btn p-3 rounded-xl" title="Abre as configurações de aparência, backups e módulos visíveis">
+                        <i class="fas fa-cog text-violet-400"></i>
+                    </button>
+                    <button id="themeToggle" class="aurora-btn p-3 rounded-xl" title="Alterna entre modo claro e escuro">
+                        <i class="fas fa-moon dark:hidden text-indigo-300"></i>
+                        <i class="fas fa-sun hidden dark:inline text-amber-400"></i>
+                    </button>
+                </div>
+                <input type="file" id="fileInput" class="hidden" accept=".csv,.json" multiple>
+            </div>
+        </header>
+
+        <!-- AVISO -->
+        <div id="importantNoticePanel" class="bg-[var(--bg-card)] border-l-4 border-amber-500/60 p-5 rounded-2xl mb-10 flex items-center gap-5 transition-all border border-amber-500/10 hover:border-amber-500/20">
+            <div class="bg-amber-500/10 p-3 rounded-xl text-amber-400 text-2xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <h4 class="font-black text-slate-200 uppercase tracking-tight text-sm leading-none mb-1">Aviso Importante</h4>
+                <p class="text-slate-400 text-xs leading-relaxed">
+                    <span class="font-bold text-amber-400">ESTE NÃO É UM SISTEMA OFICIAL DA SUA EMPRESA.</span> 
+                    Ferramenta pessoal desenvolvida para auxiliar no controlo de banco de horas.
+                    O tempo de deslocação em atestados parciais não gera crédito.
+                </p>
+            </div>
+        </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-10 sm:mb-12">
+            <!-- Saldo Anterior -->
+            <div class="kpi-card-1 p-4 sm:p-6 rounded-2xl shadow-lg border border-indigo-500/15 cursor-pointer transition-all group relative overflow-hidden hover:border-indigo-500/30 hover:shadow-indigo-500/10 hover:shadow-xl" id="cardCarriedBalance" title="Clique para editar o Saldo Inicial e Mês">
+                <div class="absolute -right-4 -top-4 text-indigo-500/10 text-6xl transition-transform group-hover:scale-110"><i class="fas fa-history"></i></div>
+                <div class="flex justify-between items-start mb-2 relative z-10">
+                    <p class="text-[var(--text-secondary)] text-[9px] font-black uppercase tracking-widest leading-none">Saldo Anterior <br><span class="lowercase text-[8px] font-normal opacity-75">(acumulado até este mês)</span></p>
+                    <i class="fas fa-pencil-alt text-slate-500 group-hover:text-indigo-400 transition-colors"></i>
+                </div>
+                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="carriedBalance">00:00</p>
+            </div>
+            
+            <!-- Mês Atual -->
+            <div class="kpi-card-2 p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-500/15 relative overflow-hidden group hover:border-blue-500/30 hover:shadow-blue-500/10 hover:shadow-xl transition-all">
+                <div class="absolute -right-4 -top-4 text-blue-500/10 text-6xl"><i class="fas fa-calendar-check"></i></div>
+                <p class="text-blue-400 text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10">Mês Atual</p>
+                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="monthBalance">00:00</p>
+            </div>
+ 
+            <!-- Acumulado -->
+            <div class="kpi-card-3 p-4 sm:p-6 rounded-2xl shadow-lg border border-violet-500/15 relative overflow-hidden group hover:border-violet-500/30 hover:shadow-violet-500/10 hover:shadow-xl transition-all">
+                <div class="absolute -right-4 -top-4 text-violet-500/10 text-6xl"><i class="fas fa-chart-pie"></i></div>
+                <p class="text-violet-400 text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10">Acumulado</p>
+                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="accumulatedBalance">00:00</p>
+            </div>
+            
+            <!-- Banco Anual -->
+            <div class="kpi-card-4 p-4 sm:p-6 rounded-2xl shadow-lg border border-cyan-500/15 relative overflow-hidden group hover:border-cyan-500/30 hover:shadow-cyan-500/10 hover:shadow-xl transition-all">
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-20 group-hover:opacity-30 transition-all"></div>
+                <div class="absolute -right-4 -top-4 text-cyan-500/10 text-6xl"><i class="fas fa-gem"></i></div>
+                <p class="text-[var(--text-secondary)] text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10" id="yearlyTitle">Banco 2026</p>
+                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10 mb-1" id="yearlyBalance">00:00</p>
+                <p class="text-[10px] text-[var(--text-secondary)] font-bold relative z-10 uppercase tracking-wider">
+                    Créditos: <span id="yearlyRequired" class="text-emerald-400 font-black">+00:00</span> 
+                    <span class="text-slate-500 mx-1">|</span> 
+                    Atrasos: <span id="yearlyAtrasos" class="text-rose-400 font-black">-00:00</span>
+                </p>
+            </div>
+        </div>
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16">
+            <!-- CALENDÁRIO -->
+            <div class="lg:col-span-2 glass-panel p-3 sm:p-6 lg:p-8 rounded-2xl">
+                <div class="flex justify-between items-center mb-8">
+                    <button id="prevMonth" class="aurora-btn p-3.5 w-12 h-12 flex items-center justify-center rounded-xl group"><i class="fas fa-chevron-left group-hover:-translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
+                    
+                    <div class="flex flex-col items-center">
+                        <h2 id="currentMonthYear" class="text-2xl lg:text-3xl font-black text-[var(--text-primary)] uppercase tracking-tight text-center"></h2>
+                        <!-- BOTÃO DE BLOQUEIO/DESBLOQUEIO FDS -->
+                        <button id="toggleWeekendsBtn" class="mt-2 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all border border-indigo-500/20 text-slate-400 hover:border-indigo-500/40"></button>
+                    </div>
+
+                    <button id="nextMonth" class="aurora-btn p-3.5 w-12 h-12 flex items-center justify-center rounded-xl group"><i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 sm:gap-3 mb-5 text-center text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] sm:tracking-[0.2em] tracking-tighter">
+                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-3"></div>
+            </div>
+
+            <!-- ANALISE -->
+            <div class="space-y-6">
+                <!-- PAINEL DISTRIBUIÇÃO -->
+                <div id="chartPanel" class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center group">
+                    <h3 class="text-xs font-bold uppercase text-indigo-400 mb-2 tracking-widest w-full text-center">Distribuição Mensal</h3>
+                    <p class="text-[9px] text-slate-500 mb-5 font-medium italic">Dias úteis planeados e eventos (Mês Atual).</p>
+                    
+                    <div class="relative w-full max-w-[220px] sm:max-w-[260px] aspect-square mx-auto flex items-center justify-center">
+                        <canvas id="workChart" class="relative z-10 w-full h-full"></canvas>
+                        
+                        <!-- CONTAGEM DIAS RESTANTES NO CENTRO EXATO -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+                            <div class="flex flex-col items-center justify-center w-[72%] h-[72%] rounded-full chart-center-bg shadow-[inset_0_2px_10px_rgba(0,0,0,0.1),0_4px_15px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.4),0_4px_15px_rgba(0,0,0,0.2)] border border-[var(--border-glow)] transition-transform duration-500 group-hover:scale-105">
+                                 <span id="remainingWorkDaysCount" class="text-4xl sm:text-5xl font-black text-[var(--accent-blue)] tracking-tighter leading-none mt-1">0</span>
+                                 <span class="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 text-center leading-tight">Dias<br>Úteis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-x-3 gap-y-2 mt-5 w-full px-2">
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-indigo-500 mr-1.5"></span>Trab</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Férias</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-violet-500 mr-1.5"></span>Comp</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-slate-500 mr-1.5"></span>Falta</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-rose-500 mr-1.5"></span>Feriado</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-cyan-500 mr-1.5"></span>Atestado</div>
+                        <div class="flex items-center text-[9px] font-bold uppercase text-slate-400"><span class="w-2 h-2 rounded-full bg-slate-400 mr-1.5"></span>Susp</div>
+                    </div>
+                </div>
+
+                <!-- SIMULADOR -->
+                <div id="simulatorPanel" class="simulator-panel-bg rounded-2xl shadow-xl p-6 text-[var(--text-primary)] relative overflow-hidden border border-indigo-500/20 glow-border-animated">
+                    <div class="absolute -right-6 -bottom-6 text-indigo-500/10"><i class="fas fa-magic fa-8x"></i></div>
+                    <p class="text-[10px] font-bold uppercase mb-4 tracking-widest flex items-center text-[var(--text-secondary)] leading-none">
+                        <i class="fas fa-magic mr-2 text-indigo-400 animate-pulse"></i> Plano de Quitação Interativo
+                    </p>
+                    
+                    <!-- DADOS PRINCIPAIS DE QUITAÇÃO -->
+                    <div class="mb-5 space-y-4">
+                        <div class="border-b border-indigo-500/10 pb-3">
+                            <div class="text-[10px] font-bold uppercase text-violet-400 mb-1 tracking-wider"><i class="fas fa-chart-line mr-1"></i> Quitação do Saldo Acumulado</div>
+                            <div id="simPayoffDateAccumulated" class="text-2xl font-black text-amber-400 tracking-tight leading-none mb-1">Defina a Meta Azul</div>
+                            <div id="simWorkingDaysAccumulated" class="text-[11px] text-[var(--text-secondary)] font-medium">Configure as opções de planejamento abaixo.</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-bold uppercase text-indigo-400 mb-1 tracking-wider"><i class="fas fa-gem mr-1"></i> Quitação do Banco Anual (2026)</div>
+                            <div id="simPayoffDateYearly" class="text-2xl font-black text-amber-500 tracking-tight leading-none mb-1">Defina a Meta Azul</div>
+                            <div id="simWorkingDaysYearly" class="text-[11px] text-[var(--text-secondary)] font-medium">Configure as opções de planejamento abaixo.</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-[var(--bg-secondary)] p-3.5 rounded-xl border border-indigo-500/10">
+                            <div class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Meta Diária</div>
+                            <div id="simDailyExtraVal" class="text-lg font-black text-indigo-400">00:00</div>
+                        </div>
+                        <div class="bg-[var(--bg-secondary)] p-3.5 rounded-xl border border-indigo-500/10">
+                            <div class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Total Abatido</div>
+                            <div id="simTotalDeduction" class="text-lg font-black text-emerald-400">00:00</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[var(--bg-secondary)] p-4 rounded-xl border border-indigo-500/10 mb-3">
+                        <div class="text-[10px] font-bold uppercase mb-3 text-[var(--text-secondary)] flex justify-between">
+                            <span>Resumo de Saldos</span>
+                            <span class="text-indigo-400 font-bold" id="simProgressPct">0% do débito</span>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="flex justify-between items-center text-[11px] font-bold">
+                                <span class="text-[var(--text-secondary)]">Abatimento no Saldo Atual:</span>
+                                <span id="simImpactAccumulated" class="text-[var(--text-primary)]">00:00</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] font-bold">
+                                <span class="text-[var(--text-secondary)]">Abatimento no Saldo Anual:</span>
+                                <span id="simImpactYearly" class="text-[var(--text-primary)]">00:00</span>
+                            </div>
+                        </div>
+                        <!-- Progresso Visual -->
+                        <div class="w-full bg-[var(--bg-primary)] h-2 rounded-full mt-3.5 overflow-hidden border border-indigo-500/10">
+                            <div id="simProgressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÁREAS DE IMPORTAÇÃO E CONFIGS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12" id="settingsSection">
+            <!-- Coluna 1: Calendário Senac -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-indigo-500/40 group">
+                <div>
+                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-indigo-400 transition-colors"><i class="fas fa-calendar-check mr-3 text-indigo-400"></i>Calendário de Eventos</h3>
+                    <textarea id="importText" class="aurora-input w-full h-24 p-3.5 text-sm rounded-xl no-scrollbar mb-4" placeholder="Cole o texto do comunicado anual..."></textarea>
+                </div>
+                <div>
+                    <button id="processImport" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/15 text-xs uppercase tracking-widest text-center transition-all">Processar Texto</button>
+                    <div id="importStatus" class="mt-3 text-[10px] font-bold uppercase text-emerald-400 text-center"></div>
+                </div>
+            </div>
+
+            <!-- Coluna 2: Ponto Eletrônico -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-emerald-500/40 group">
+                <div>
+                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-emerald-400 transition-colors"><i class="fas fa-fingerprint mr-3 text-emerald-400"></i>Ponto Eletrónico</h3>
+                    <textarea id="importClockInText" class="aurora-input w-full h-24 p-3.5 text-sm rounded-xl no-scrollbar mb-4" placeholder="Cole os registos de ponto ou importe o PDF..."></textarea>
+                </div>
+                
+                <div class="flex flex-col gap-2.5">
+                    <button id="processClockInImport" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/15 text-[11px] uppercase tracking-widest text-center transition-all">Processar Texto</button>
+                    
+                    <div class="flex items-center gap-2">
+                        <hr class="flex-1 border-slate-700/50">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">OU</span>
+                        <hr class="flex-1 border-slate-700/50">
+                    </div>
+                    
+                    <button id="uploadPdfBtn" class="w-full py-3 bg-[#1a1f3a] text-white font-bold rounded-xl hover:bg-[#1f2545] transition-all text-[11px] uppercase tracking-widest text-center flex justify-center items-center gap-3 border border-indigo-500/15 hover:border-indigo-500/30" title="Importar ficheiro PDF de ponto eletrônico — o sistema lê automaticamente as datas, horários e motivos">
+                        <i class="fas fa-file-pdf text-rose-400 text-lg"></i> Importar Ficheiro PDF
+                    </button>
+                    <input type="file" id="pdfFileInput" class="hidden" accept=".pdf,.txt">
+                    <div id="importClockInStatus" class="mt-2 text-[10px] font-bold uppercase text-emerald-400 text-center"></div>
+                </div>
+            </div>
+
+            <!-- Coluna 3: Planeamento -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-violet-500/40 group">
+                <div>
+                    <h3 class="font-bold text-base mb-5 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-violet-400 transition-colors"><i class="fas fa-sliders-h mr-3 text-violet-400"></i>Planeamento</h3>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider" id="labelPreviousBalance">Saldo Anterior</label>
+                            <input type="text" id="previousBalance" value="00:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider" id="labelPreviousMonth" title="Mês em que este saldo foi gerado">Mês de Origem</label>
+                            <input type="month" id="previousBalanceMonth" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jornada</label>
+                            <input type="time" id="dailyWorkHours" value="08:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Almoço Padrão</label>
+                            <input type="time" id="defaultLunchBreak" value="01:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Entrada Contratual</label>
+                            <input type="time" id="contractualStartTime" value="08:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Meta Azul Diária</label>
+                            <input type="time" id="planDailyExtra" value="00:00" class="aurora-input w-full p-2.5 rounded-lg text-sm !border-indigo-500/20 !text-indigo-300">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Início do Plano</label>
+                            <input type="date" id="planStartDate" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fim do Plano</label>
+                            <input type="date" id="planEndDate" class="aurora-input w-full p-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
+                </div>
+                <button id="resetPlanBtn" class="mt-4 w-full py-3.5 border border-slate-700/50 text-slate-400 font-bold rounded-xl hover:bg-[#1a1f3a] hover:text-slate-200 transition-all uppercase text-[10px] tracking-widest text-center">Limpar Planeamento</button>
+            </div>
+        </div>
+
+        <!-- PAINEL DE DATAS SENAC (LEGENDA) -->
+        <div id="senacLegendPanel" class="glass-panel p-6 rounded-2xl mb-16">
+            <h3 class="font-bold text-lg mb-5 flex items-center uppercase tracking-tight text-slate-200"><i class="fas fa-list-ul mr-3 text-amber-400"></i>Datas Oficiais Importadas</h3>
+            <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-5 border-b border-slate-700/30 pb-3">Esta legenda mostra todos os dias que foram processados a partir dos comunicados oficiais.</p>
+            
+            <div id="senacLegendContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto no-scrollbar pr-2 pb-2">
+                <!-- Preenchido via JS dinamicamente -->
+            </div>
+        </div>
+        
+        <!-- STATUS DE SALVAMENTO -->
+        <div id="saveStatus" class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold opacity-0 transition-all duration-500 z-40 transform translate-y-10">
+            <i class="fas fa-check-circle mr-2"></i> Dados guardados!
+        </div>
+
+        <!-- PAINEL REAL-TIME: LIVE TRACKER -->
+        <div id="liveTrackerPanel" class="fixed bottom-6 left-6 bg-[var(--bg-card)] border border-[var(--border-glow)] p-5 rounded-2xl shadow-2xl shadow-indigo-500/5 z-40 transition-all duration-300 transform flex flex-col gap-3 min-w-[200px]">
+            <div class="flex items-center gap-3 mb-1">
+                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)]">Live Tracker</span>
+            </div>
+            <div class="space-y-2.5">
+                <div class="flex justify-between items-end border-b border-indigo-500/10 pb-2.5" title="Sua dívida inicial amortizada pelas suas horas extras">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-secondary)] leading-tight">Saldo<br>Anterior</div>
+                    <div id="rtCarriedDebt" class="text-lg font-black tracking-tighter text-[var(--text-primary)] transition-all duration-200">00:00</div>
+                </div>
+                <div class="flex justify-between items-end border-b border-indigo-500/10 pb-2.5" title="Realidade atual somando dívida antiga com o mês atual">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-secondary)] leading-tight">Saldo<br>Acumulado</div>
+                    <div id="rtAccumulated" class="text-lg font-black tracking-tighter text-[var(--text-primary)] transition-all duration-200">00:00</div>
+                </div>
+                <div class="flex justify-between items-end" title="Meta do Calendário Oficial Anual">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-secondary)] leading-tight">Banco<br>Total</div>
+                    <div id="rtTotalDebt" class="text-lg font-black tracking-tighter text-[var(--text-primary)] transition-all duration-200">00:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE LANÇAMENTOS -->
+    <div id="dayDetailsModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 opacity-0 pointer-events-none modal">
+        <div class="modal-content rounded-3xl shadow-2xl w-[95%] sm:w-full max-w-2xl p-5 sm:p-8 m-2 sm:m-4 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modalDayTitle" class="text-2xl font-black text-[var(--text-primary)] tracking-tight italic"></h3>
+                <button id="closeModal" class="text-slate-500 hover:text-rose-400 transition-colors"><i class="fas fa-times-circle fa-xl"></i></button>
+            </div>
+            
+            <div class="mb-8">
+                <label class="block text-[10px] font-bold uppercase text-[var(--text-secondary)] mb-3 tracking-[0.2em]">Categoria</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="office"><i class="fas fa-briefcase text-xl text-office"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Trabalho</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="vacation"><i class="fas fa-umbrella-beach text-xl text-vacation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Férias</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="absence"><i class="fas fa-user-times text-xl text-absence text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Falta</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="holiday"><i class="fas fa-flag text-xl text-holiday text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Feriado</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="attestation"><i class="fas fa-hospital-user text-xl text-attestation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Atestado</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="compensation"><i class="fas fa-balance-scale text-xl text-compensation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Compensar</span></button>
+                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="suspensao"><i class="fas fa-ban text-xl text-suspensao text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Suspensão</span></button>
+                </div>
+            </div>
+            <div id="periodSelectionContainer" class="mb-6 p-5 bg-[var(--bg-secondary)] rounded-xl border border-amber-500/25 text-left transition-all">
+                <p class="text-[10px] font-bold text-amber-400 uppercase mb-3 tracking-widest flex items-center"><i class="fas fa-copy mr-2"></i> Replicar para vários dias (Lançamento em Bloco)</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-slate-400">De (Início)</label><input type="date" id="rangeStartDate" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-slate-400">Até (Fim)</label><input type="date" id="rangeEndDate" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                </div>
+                <p class="mt-2 text-[9px] text-amber-500/75 italic">* Dica: Mude a data final para aplicar estas configurações a vários dias de uma só vez. Finais de semana requerem que o desbloqueio esteja ativo.</p>
+            </div>
+
+            <!-- Formulário Profissional Atestado -->
+            <div id="attestationForm" class="hidden mb-6 space-y-4">
+                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-cyan-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Detalhes do Atestado</p>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="fullDayAttestation" class="w-4 h-4 rounded text-cyan-500 mr-2 accent-cyan-500">
+                            <span class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">Dia Inteiro?</span>
+                        </label>
+                    </div>
+
+                    <div id="attestationTimeFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[var(--text-primary)]">
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">1. Início Expediente</label><input type="time" id="attWorkIn" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">2. Saída p/ Consulta</label><input type="time" id="attExitToDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-cyan-400 font-bold italic">3. Início Atestado</label><input type="time" id="attDocIn" class="aurora-input w-full p-3 rounded-lg text-sm !border-cyan-500/30"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-cyan-400 font-bold italic">4. Fim Atestado</label><input type="time" id="attDocOut" class="aurora-input w-full p-3 rounded-lg text-sm !border-cyan-500/30"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">5. Retorno Trabalho</label><input type="time" id="attReturnFromDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">6. Saída Final</label><input type="time" id="attWorkOut" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                    </div>
+                    <p class="mt-3 text-[9px] text-slate-500 italic">* O sistema credita apenas as horas trabalhadas e o tempo de atestado. O tempo de deslocação não é somado.</p>
+                </div>
+            </div>
+
+            <!-- Horários Manuais (Trabalho Normal) -->
+            <div id="workHoursContainer" class="space-y-4 mb-6 hidden">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Entrada</label><input type="time" id="startTime" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Saída</label><input type="time" id="endTime" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                </div>
+                <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Almoço</label><input type="time" id="lunchBreak" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+            </div>
+
+            <!-- Planeamento de Hora Extra Customizada do Dia -->
+            <div id="dayPlanExtraContainer" class="space-y-1 mb-6 hidden">
+                <label class="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Hora Extra Planeada para este Dia</label>
+                <input type="time" id="dayPlanExtra" value="00:00" class="aurora-input w-full p-3 rounded-lg text-sm !border-indigo-500/20 !text-indigo-300">
+                <p class="text-[9px] text-slate-500 mt-1">* Deixe 00:00 para usar a Meta Azul Diária padrão do planeamento global.</p>
+            </div>
+
+            <!-- Abono de Atraso -->
+            <div class="mb-5 flex items-center gap-3 bg-[var(--bg-secondary)] p-3.5 rounded-xl border border-indigo-500/10">
+                <input type="checkbox" id="excusedDelay" class="w-4 h-4 rounded mt-0.5 accent-indigo-500 cursor-pointer">
+                <div class="leading-tight">
+                    <label for="excusedDelay" class="text-xs font-bold text-[var(--text-primary)] cursor-pointer">Abonar atraso/falta deste dia</label>
+                    <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">Se marcado, qualquer saldo negativo/atraso deste dia será ignorado (zerado).</p>
+                </div>
+            </div>
+
+            <!-- Campo de Notas -->
+            <div id="dayDetailsNoteContainer" class="mb-5">
+                <label class="block text-[10px] font-bold uppercase text-[var(--text-secondary)] mb-2 tracking-[0.2em]">Anotações do Dia</label>
+                <textarea id="dayNotes" class="aurora-input w-full p-3 text-sm resize-none h-20" placeholder="Ex: Batida de ponto não funcionou..."></textarea>
+            </div>
+
+            <div id="daySummary" class="p-4 bg-[var(--bg-secondary)] border border-indigo-500/10 rounded-xl mb-6 text-sm text-center font-bold text-[var(--text-primary)] uppercase tracking-tight transition-all duration-300"></div>
+            
+            <div class="flex gap-3">
+                <button id="deleteDay" class="flex-1 py-3 text-rose-400 font-bold hover:bg-rose-500/10 rounded-xl transition-all uppercase text-[10px] tracking-widest text-center border border-rose-500/20">Limpar (Período)</button>
+                <button id="saveDay" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-xl shadow-lg uppercase text-[10px] tracking-widest text-center hover:from-indigo-500 hover:to-violet-500 transition-all transform hover:-translate-y-0.5">Confirmar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EXPORTAÇÃO -->
+    <div id="exportModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 opacity-0 pointer-events-none modal">
+        <div class="modal-content rounded-2xl shadow-2xl w-[95%] sm:w-full max-w-md p-6 sm:p-10 m-2 sm:m-4">
+            <h3 class="text-2xl font-black mb-6 tracking-tight uppercase text-[var(--text-primary)]">Relatório CSV</h3>
+            <div class="space-y-5 mb-8">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Início</label>
+                    <input type="date" id="exportStartDate" class="aurora-input w-full p-3.5 rounded-xl">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Fim</label>
+                    <input type="date" id="exportEndDate" class="aurora-input w-full p-3.5 rounded-xl">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button id="cancelExport" class="flex-1 py-3.5 text-slate-400 font-bold rounded-xl hover:bg-[var(--bg-secondary)] uppercase text-[10px] tracking-widest text-center transition-all">Sair</button>
+                <button id="confirmExport" class="flex-1 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-xl shadow-lg uppercase text-[10px] tracking-widest text-center hover:from-indigo-500 hover:to-violet-500 transition-all transform hover:-translate-y-0.5">Gerar</button>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL LIMPEZA -->
+    <div id="clearModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 opacity-0 pointer-events-none modal">
+        <div class="modal-content rounded-2xl shadow-2xl w-[95%] sm:w-full max-w-md p-6 sm:p-10 m-2 sm:m-4 text-center">
+            <i class="fas fa-triangle-exclamation text-4xl text-rose-450 mb-5"></i>
+            <h3 class="text-xl font-black mb-3 text-[var(--text-primary)]">Atenção!</h3>
+            <p class="text-sm text-[var(--text-secondary)] mb-6 font-medium leading-relaxed">Esta ação irá apagar permanentemente todos os registos atuais do calendário. É estritamente recomendado fazer um backup primeiro.</p>
+            <div class="flex gap-3">
+                <button id="cancelClear" class="flex-1 py-3.5 text-slate-400 font-bold rounded-xl hover:bg-[var(--bg-secondary)] uppercase text-xs tracking-widest transition-all">Cancelar</button>
+                <button id="confirmClearBtn" class="flex-1 py-3.5 bg-gradient-to-r from-rose-600 to-rose-700 text-white font-bold rounded-xl shadow-lg hover:from-rose-500 hover:to-rose-600 transition-all uppercase text-xs tracking-widest transform hover:-translate-y-0.5">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÕES -->
+    <div id="settingsModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 opacity-0 pointer-events-none modal">
+        <div class="modal-content rounded-2xl shadow-2xl w-[95%] sm:w-full max-w-xl p-5 sm:p-8 m-2 sm:m-4 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-[var(--text-primary)] tracking-tight uppercase flex items-center gap-2"><i class="fas fa-cog text-indigo-400"></i>Configurações</h3>
+                <button id="closeSettings" class="text-slate-500 hover:text-rose-400 transition-colors"><i class="fas fa-times-circle fa-xl"></i></button>
+            </div>
+            
+            <div class="space-y-5 mb-6">
+                <!-- Seção 1: Customização e Densidade -->
+                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-indigo-500/10 space-y-4">
+                    <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-id-card"></i> Personalização e Aparência</h4>
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wide">Nome Personalizado no Painel</label>
+                        <input type="text" id="cfgUserName" class="aurora-input w-full p-3 rounded-xl text-sm" placeholder="Ex: João Silva">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wide">Modo de Densidade Visual</label>
+                        <select id="cfgViewMode" class="aurora-input w-full p-3 rounded-xl text-sm">
+                            <option value="standard">Standard (Visualização Atual)</option>
+                            <option value="pocket">Pocket (Altamente Compacto)</option>
+                            <option value="detailed">Detailed (Mais Detalhes e Animações)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Seção 2: Salvamento e Backups -->
+                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-indigo-500/10 space-y-4">
+                    <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-shield-alt"></i> Salvamento e Backups</h4>
+                    
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="cfgAutoSave" class="w-4 h-4 rounded mt-0.5 accent-indigo-500">
+                        <div class="leading-tight">
+                            <label for="cfgAutoSave" class="text-xs font-bold text-[var(--text-primary)]">Auto-salvar Alterações</label>
+                            <p class="text-[10px] text-[var(--text-secondary)] mt-1">Salvar os dados no navegador de forma automática sempre que editar horários.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="cfgAutoBackup" class="w-4 h-4 rounded mt-0.5 accent-indigo-500">
+                        <div class="leading-tight">
+                            <label for="cfgAutoBackup" class="text-xs font-bold text-[var(--text-primary)]">Download de Backup Automático</label>
+                            <p class="text-[10px] text-[var(--text-secondary)] mt-1">Baixar um ficheiro backup .json automaticamente para seu computador.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wide">Frequência do Backup Automático</label>
+                        <select id="cfgBackupInterval" class="aurora-input w-full p-3 rounded-xl text-sm">
+                            <option value="every_save">A cada modificação importante</option>
+                            <option value="hourly">A cada 1 Hora</option>
+                            <option value="daily">Diário (Uma vez por dia)</option>
+                            <option value="weekly">Semanal (Uma vez por semana)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Seção 3: Habilitar/Desabilitar Painéis -->
+                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-indigo-500/10 space-y-3">
+                    <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-eye"></i> Exibição de Módulos (Visibilidade)</h4>
+                    <p class="text-[9px] text-[var(--text-secondary)] mb-2">Selecione quais seções deseja exibir ou ocultar no seu painel principal.</p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowNotice" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Aviso Importante</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowChart" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Gráfico Distribuição</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowSimulator" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Plano Quitação</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowImports" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Importação/Lançamentos</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowLegend" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Legendas Oficiais</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer text-[var(--text-primary)]">
+                            <input type="checkbox" id="cfgShowTracker" class="w-4 h-4 rounded accent-indigo-500">
+                            <span>Live Tracker</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 4: Histórico de Versões Internas -->
+                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-indigo-500/10">
+                    <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fas fa-history"></i> Histórico de Backups Internos</h4>
+                    <p class="text-[9px] text-[var(--text-secondary)] mb-3">Últimas versões guardadas automaticamente na memória local. Útil para reverter erros.</p>
+                    
+                    <div id="localBackupHistoryContainer" class="space-y-2 max-h-36 overflow-y-auto no-scrollbar">
+                        <!-- Gerado por JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button id="saveSettingsBtn" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg uppercase text-[11px] tracking-widest text-center transition-all transform hover:-translate-y-0.5">Salvar Configurações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="notificationToast" class="fixed top-6 right-6 bg-[#0f1525]/95 backdrop-blur-xl text-white px-6 py-4 rounded-xl shadow-2xl transform -translate-y-32 transition-all duration-300 z-50 font-bold flex items-center gap-3 border border-indigo-500/25">
+        <i id="notifIcon" class="fas fa-check-circle text-emerald-400 text-lg"></i>
+        <span id="notificationMessage" class="tracking-wide">Sucesso</span>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SISTEMA DE ARMAZENAMENTO ROBUSTO COM FALLBACK ---
+        const memStorage = {};
+        const safeStorage = {
+            getItem: (key) => {
+                try {
+                    return window.localStorage.getItem(key) || memStorage[key] || null;
+                } catch (e) {
+                    return memStorage[key] || null;
+                }
+            },
+            setItem: (key, value) => {
+                try {
+                    window.localStorage.setItem(key, value);
+                } catch (e) {
+                    // Fallback para memória em caso de bloqueio de Cookies/Iframe
+                }
+                memStorage[key] = String(value);
+            },
+            removeItem: (key) => {
+                try {
+                    window.localStorage.removeItem(key);
+                } catch (e) {
+                    // Fallback
+                }
+                delete memStorage[key];
+            }
+        };
+
+        function showNotification(msg, type) {
+            const t = document.getElementById('notificationToast');
+            if(!t) return;
+            document.getElementById('notificationMessage').textContent = msg;
+            const icon = document.getElementById('notifIcon');
+            
+            t.className = `fixed top-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 text-white transform transition-all duration-300 flex items-center gap-3 font-bold ${type==='success'?'bg-emerald-600':'bg-rose-600'}`;
+            if(icon) icon.className = type === 'success' ? 'fas fa-check-circle text-white text-lg' : 'fas fa-exclamation-triangle text-white text-lg';
+            
+            t.classList.remove('-translate-y-32');
+            setTimeout(() => t.classList.add('-translate-y-32'), 3500);
+        }
+
+        let currentDate = new Date(2026, 0, 1);
+        let selectedDay = null;
+        let workData = {};
+        let holidays = {};
+        let myChart = null;
+        let blockWeekends = true; 
+        let payoffDateAccumulatedKey = null; 
+        let payoffDateYearlyKey = null; 
+        let appSettings = {
+            userName: '',
+            autoSave: true,
+            autoBackup: false,
+            backupInterval: 'every_save',
+            viewMode: 'standard',
+            showNotice: true,
+            showChart: true,
+            showSimulator: true,
+            showImports: true,
+            showLegend: true,
+            showTracker: true,
+            lastFileBackupTime: 0
+        }; 
+        
+        const STORAGE_KEYS = {
+            WORK_DATA: 'gestor_horas_work_data',
+            HOLIDAYS: 'gestor_horas_holidays',
+            SETTINGS: 'gestor_horas_settings',
+            DARK_MODE: 'gestor_horas_dark_mode'
+        };
+
+        const el = {
+            saveAllBtn: document.getElementById('saveAllBtn'),
+            saveBackupBtn: document.getElementById('saveBackupBtn'),
+            importBtn: document.getElementById('importBtn'),
+            exportBtn: document.getElementById('exportBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            themeToggle: document.getElementById('themeToggle'),
+            fileInput: document.getElementById('fileInput'),
+            
+            cardCarriedBalance: document.getElementById('cardCarriedBalance'),
+            previousBalanceInput: document.getElementById('previousBalance'),
+            previousBalanceMonth: document.getElementById('previousBalanceMonth'),
+            labelPreviousBalance: document.getElementById('labelPreviousBalance'),
+            labelPreviousMonth: document.getElementById('labelPreviousMonth'),
+            monthBalanceDisplay: document.getElementById('monthBalance'),
+            carriedBalanceDisplay: document.getElementById('carriedBalance'),
+            accumulatedBalanceDisplay: document.getElementById('accumulatedBalance'),
+            yearlyBalanceDisplay: document.getElementById('yearlyBalance'),
+            yearlyRequiredDisplay: document.getElementById('yearlyRequired'),
+            yearlyAtrasosDisplay: document.getElementById('yearlyAtrasos'),
+            yearlyTitleDisplay: document.getElementById('yearlyTitle'),
+            
+            calendarGrid: document.getElementById('calendarGrid'),
+            currentMonthYear: document.getElementById('currentMonthYear'),
+            prevMonthBtn: document.getElementById('prevMonth'),
+            nextMonthBtn: document.getElementById('nextMonth'),
+            toggleWeekendsBtn: document.getElementById('toggleWeekendsBtn'),
+            
+            importText: document.getElementById('importText'),
+            processImportBtn: document.getElementById('processImport'),
+            importStatus: document.getElementById('importStatus'),
+            
+            // Novos elementos do painel de Ponto Eletrónico
+            importClockInText: document.getElementById('importClockInText'),
+            processClockInImportBtn: document.getElementById('processClockInImport'),
+            uploadPdfBtn: document.getElementById('uploadPdfBtn'),
+            pdfFileInput: document.getElementById('pdfFileInput'),
+            importClockInStatus: document.getElementById('importClockInStatus'),
+            
+            dailyWorkHoursInput: document.getElementById('dailyWorkHours'),
+            contractualStartTimeInput: document.getElementById('contractualStartTime'),
+            defaultLunchBreak: document.getElementById('defaultLunchBreak'),
+            planDailyExtra: document.getElementById('planDailyExtra'),
+            planStartDate: document.getElementById('planStartDate'),
+            planEndDate: document.getElementById('planEndDate'),
+            
+            simPayoffDateAccumulated: document.getElementById('simPayoffDateAccumulated'),
+            simWorkingDaysAccumulated: document.getElementById('simWorkingDaysAccumulated'),
+            simPayoffDateYearly: document.getElementById('simPayoffDateYearly'),
+            simWorkingDaysYearly: document.getElementById('simWorkingDaysYearly'),
+            simDailyExtraVal: document.getElementById('simDailyExtraVal'),
+            simTotalDeduction: document.getElementById('simTotalDeduction'),
+            simProgressPct: document.getElementById('simProgressPct'),
+            simImpactAccumulated: document.getElementById('simImpactAccumulated'),
+            simImpactYearly: document.getElementById('simImpactYearly'),
+            simProgressBar: document.getElementById('simProgressBar'),
+            
+            dayDetailsModal: document.getElementById('dayDetailsModal'),
+            closeModalBtn: document.getElementById('closeModal'),
+            modalDayTitle: document.getElementById('modalDayTitle'),
+            startTimeInput: document.getElementById('startTime'),
+            endTimeInput: document.getElementById('endTime'),
+            lunchBreakInput: document.getElementById('lunchBreak'),
+            daySummary: document.getElementById('daySummary'),
+            saveDayBtn: document.getElementById('saveDay'),
+            deleteDayBtn: document.getElementById('deleteDay'),
+            dayNotes: document.getElementById('dayNotes'),
+            dayPlanExtra: document.getElementById('dayPlanExtra'),
+            dayPlanExtraContainer: document.getElementById('dayPlanExtraContainer'),
+            excusedDelay: document.getElementById('excusedDelay'),
+            
+            periodSelectionContainer: document.getElementById('periodSelectionContainer'),
+            rangeStartDate: document.getElementById('rangeStartDate'),
+            rangeEndDate: document.getElementById('rangeEndDate'),
+            
+            attestationForm: document.getElementById('attestationForm'),
+            fullDayAttestation: document.getElementById('fullDayAttestation'),
+            attestationTimeFields: document.getElementById('attestationTimeFields'),
+            attWorkIn: document.getElementById('attWorkIn'),
+            attExitToDoc: document.getElementById('attExitToDoc'),
+            attDocIn: document.getElementById('attDocIn'),
+            attDocOut: document.getElementById('attDocOut'),
+            attReturnFromDoc: document.getElementById('attReturnFromDoc'),
+            attWorkOut: document.getElementById('attWorkOut'),
+            workHoursContainer: document.getElementById('workHoursContainer'),
+            
+            exportModal: document.getElementById('exportModal'),
+            cancelExportBtn: document.getElementById('cancelExport'),
+            confirmExportBtn: document.getElementById('confirmExport'),
+            exportStartDateInput: document.getElementById('exportStartDate'),
+            exportEndDateInput: document.getElementById('exportEndDate'),
+            clearModal: document.getElementById('clearModal'),
+            cancelClearBtn: document.getElementById('cancelClear'),
+            confirmClearBtn: document.getElementById('confirmClearBtn'),
+            
+            saveStatus: document.getElementById('saveStatus'),
+            resetPlanBtn: document.getElementById('resetPlanBtn'),
+            settingsSection: document.getElementById('settingsSection'),
+
+            rtCarriedDebt: document.getElementById('rtCarriedDebt'),
+            rtAccumulated: document.getElementById('rtAccumulated'),
+            rtTotalDebt: document.getElementById('rtTotalDebt'),
+            senacLegendContainer: document.getElementById('senacLegendContainer'),
+            
+            settingsBtn: document.getElementById('settingsBtn'),
+            settingsModal: document.getElementById('settingsModal'),
+            closeSettingsBtn: document.getElementById('closeSettings'),
+            cfgUserName: document.getElementById('cfgUserName'),
+            cfgAutoSave: document.getElementById('cfgAutoSave'),
+            cfgAutoBackup: document.getElementById('cfgAutoBackup'),
+            localBackupHistoryContainer: document.getElementById('localBackupHistoryContainer'),
+            saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+
+            cfgViewMode: document.getElementById('cfgViewMode'),
+            cfgBackupInterval: document.getElementById('cfgBackupInterval'),
+            cfgShowNotice: document.getElementById('cfgShowNotice'),
+            cfgShowChart: document.getElementById('cfgShowChart'),
+            cfgShowSimulator: document.getElementById('cfgShowSimulator'),
+            cfgShowImports: document.getElementById('cfgShowImports'),
+            cfgShowLegend: document.getElementById('cfgShowLegend'),
+            cfgShowTracker: document.getElementById('cfgShowTracker'),
+
+            importantNoticePanel: document.getElementById('importantNoticePanel'),
+            chartPanel: document.getElementById('chartPanel'),
+            simulatorPanel: document.getElementById('simulatorPanel'),
+            senacLegendPanel: document.getElementById('senacLegendPanel'),
+            liveTrackerPanel: document.getElementById('liveTrackerPanel')
+        };
+
+        function init() {
+            if (!checkLocalStorage()) return;
+            
+            setupDefaultDates();
+            loadAllData();
+            setupEventListeners();
+            updateWeekendToggleUI();
+            renderCalendar();
+            updateChart();
+            updateBalances();
+            renderSenacLegend();
+            showAutoSaveStatus();
+        }
+
+        function setupEventListeners() {
+            el.prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); updateChart(); updateBalances(); };
+            el.nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); updateChart(); updateBalances(); };
+            
+            el.toggleWeekendsBtn.onclick = () => {
+                blockWeekends = !blockWeekends;
+                updateWeekendToggleUI();
+                saveAllData();
+                renderCalendar();
+                showNotification(blockWeekends ? 'Fins de semana bloqueados.' : 'Fins de semana desbloqueados.', 'success');
+            };
+            
+            el.closeModalBtn.onclick = closeDayModal;
+            el.saveDayBtn.onclick = saveDayData;
+            el.deleteDayBtn.onclick = deleteDayData;
+            el.themeToggle.onclick = toggleTheme;
+            
+            el.saveAllBtn.onclick = () => { saveAllData(); showNotification('Todos os dados foram guardados manualmente.', 'success'); };
+            el.saveBackupBtn.onclick = saveBackupData;
+            el.importBtn.onclick = () => el.fileInput.click();
+            el.fileInput.onchange = handleFileImport;
+            el.exportBtn.onclick = openExportModal;
+            el.clearBtn.onclick = openClearModal;
+            
+            if (el.settingsBtn) el.settingsBtn.onclick = openSettingsModal;
+            if (el.closeSettingsBtn) el.closeSettingsBtn.onclick = closeSettingsModal;
+            if (el.saveSettingsBtn) el.saveSettingsBtn.onclick = saveSettingsData;
+            
+            el.cancelExportBtn.onclick = closeExportModal;
+            el.confirmExportBtn.onclick = handleCustomExport;
+            el.cancelClearBtn.onclick = closeClearModal;
+            el.confirmClearBtn.onclick = handleClearData;
+
+            el.processImportBtn.onclick = () => parseAndApplyImportedData(el.importText.value);
+            el.processClockInImportBtn.onclick = () => handleClockInImport(el.importClockInText.value);
+            el.resetPlanBtn.onclick = resetPlanning;
+
+            // NOVA LÓGICA: Ler e parsear PDF
+            if(el.uploadPdfBtn) {
+                el.uploadPdfBtn.onclick = () => el.pdfFileInput.click();
+            }
+            if(el.pdfFileInput) {
+                el.pdfFileInput.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    
+                    showNotification('A extrair dados do ficheiro...', 'success');
+                    
+                    try {
+                        if (file.name.toLowerCase().endsWith('.pdf')) {
+                            const arrayBuffer = await file.arrayBuffer();
+                            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                            let text = '';
+                            
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const content = await page.getTextContent();
+                                const strings = content.items.map(item => item.str);
+                                text += strings.join(' ') + '\n';
+                            }
+                            
+                            el.importClockInText.value = text;
+                            handleClockInImport(text);
+                            
+                        } else {
+                            const text = await file.text();
+                            el.importClockInText.value = text;
+                            handleClockInImport(text);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        showNotification('Erro ao processar ficheiro. Verifique se o PDF é válido.', 'error');
+                    }
+                    e.target.value = ''; // Permite carregar o mesmo ficheiro de novo
+                };
+            }
+
+            if (el.cardCarriedBalance) {
+                el.cardCarriedBalance.onclick = () => {
+                    if (el.settingsSection) el.settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.previousBalanceInput.focus();
+                    el.previousBalanceInput.classList.add('ring-4', 'ring-office', 'scale-105');
+                    el.previousBalanceMonth.classList.add('ring-4', 'ring-office', 'scale-105');
+                    el.labelPreviousBalance.classList.replace('text-slate-500', 'text-office');
+                    el.labelPreviousMonth.classList.replace('text-slate-500', 'text-office');
+                    
+                    setTimeout(() => {
+                        el.previousBalanceInput.classList.remove('ring-4', 'ring-office', 'scale-105');
+                        el.previousBalanceMonth.classList.remove('ring-4', 'ring-office', 'scale-105');
+                        el.labelPreviousBalance.classList.replace('text-office', 'text-slate-500');
+                        el.labelPreviousMonth.classList.replace('text-office', 'text-slate-500');
+                    }, 1200);
+                };
+            }
+
+            [el.previousBalanceInput, el.previousBalanceMonth, el.dailyWorkHoursInput, el.contractualStartTimeInput, el.planDailyExtra, el.planStartDate, el.planEndDate, el.defaultLunchBreak].forEach(inp => {
+                if(inp) inp.addEventListener('input', () => { 
+                    saveAllData(); 
+                    renderCalendar(); 
+                    updateBalances(); 
+                    updateChart(); 
+                });
+            });
+
+            document.querySelectorAll('.day-type-btn').forEach(btn => {
+                btn.onclick = () => updateModalUI(btn.dataset.type);
+            });
+
+            [el.startTimeInput, el.endTimeInput, el.lunchBreakInput, el.attWorkIn, el.attExitToDoc, el.attDocIn, el.attDocOut, el.attReturnFromDoc, el.attWorkOut].forEach(i => {
+                if(i) i.addEventListener('input', calculateDayHours);
+            });
+            
+            el.fullDayAttestation.onchange = () => {
+                el.attestationTimeFields.classList.toggle('hidden', el.fullDayAttestation.checked);
+                calculateDayHours();
+            };
+            
+            if (el.excusedDelay) {
+                el.excusedDelay.onchange = calculateDayHours;
+            }
+
+            setInterval(() => {
+                if(Object.keys(workData).length > 0) saveAllData();
+            }, 30000);
+        }
+
+        function updateWeekendToggleUI() {
+            if(blockWeekends) {
+                el.toggleWeekendsBtn.innerHTML = '<i class="fas fa-lock text-slate-400"></i> <span class="opacity-80">FDS: Bloqueado</span>';
+                el.toggleWeekendsBtn.className = 'mt-2 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full transition-all border shadow-sm bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700';
+            } else {
+                el.toggleWeekendsBtn.innerHTML = '<i class="fas fa-unlock text-amber-500"></i> <span class="opacity-100">FDS: Livre</span>';
+                el.toggleWeekendsBtn.className = 'mt-2 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full transition-all border shadow-sm bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-900/50';
+            }
+        }
+
+        function setupDefaultDates() {
+            const today = new Date();
+            const endOfYear = new Date(today.getFullYear(), 11, 31);
+            if(el.planStartDate && !el.planStartDate.value) el.planStartDate.value = formatDateKey(today);
+            if(el.planEndDate && !el.planEndDate.value) el.planEndDate.value = formatDateKey(endOfYear);
+            if(el.rangeStartDate) el.rangeStartDate.value = formatDateKey(today);
+            if(el.rangeEndDate) el.rangeEndDate.value = formatDateKey(today);
+            if(el.exportStartDateInput) el.exportStartDateInput.value = formatDateKey(new Date(today.getFullYear(), 0, 1));
+            if(el.exportEndDateInput) el.exportEndDateInput.value = formatDateKey(today);
+            if(el.previousBalanceMonth && !el.previousBalanceMonth.value) el.previousBalanceMonth.value = `${today.getFullYear()-1}-12`;
+        }
+        
+        function saveAllData() {
+            try {
+                safeStorage.setItem(STORAGE_KEYS.WORK_DATA, JSON.stringify(workData));
+                safeStorage.setItem(STORAGE_KEYS.HOLIDAYS, JSON.stringify(holidays));
+                
+                const settings = {
+                    previousBalance: el.previousBalanceInput.value,
+                    previousBalanceMonth: el.previousBalanceMonth ? el.previousBalanceMonth.value : '',
+                    dailyWorkHours: el.dailyWorkHoursInput.value,
+                    contractualStartTime: el.contractualStartTimeInput.value,
+                    defaultLunchBreak: el.defaultLunchBreak.value,
+                    planDailyExtra: el.planDailyExtra.value,
+                    planStartDate: el.planStartDate.value,
+                    planEndDate: el.planEndDate.value,
+                    blockWeekends: blockWeekends,
+                    appSettings: appSettings
+                };
+                safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+                safeStorage.setItem(STORAGE_KEYS.DARK_MODE, document.documentElement.classList.contains('dark') ? 'true' : 'false');
+                
+                // Grava backup no histórico local de versões (memória temporária)
+                pushLocalBackup();
+                
+                // Se backup em ficheiro estiver ativo e a gravação for bem sucedida, aciona o download automático
+                if (appSettings.autoBackup) {
+                    triggerSilentBackupDownload();
+                }
+                
+                showSaveStatus();
+                return true;
+            } catch (error) {
+                console.error('Erro ao guardar dados:', error);
+                return false;
+            }
+        }
+        
+        function loadAllData() {
+            try {
+                const savedWorkData = safeStorage.getItem(STORAGE_KEYS.WORK_DATA);
+                workData = savedWorkData ? JSON.parse(savedWorkData) : {};
+                
+                const savedHolidays = safeStorage.getItem(STORAGE_KEYS.HOLIDAYS);
+                holidays = savedHolidays ? JSON.parse(savedHolidays) : {};
+                
+                const savedSettings = safeStorage.getItem(STORAGE_KEYS.SETTINGS);
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    el.previousBalanceInput.value = settings.previousBalance || "00:00";
+                    if(el.previousBalanceMonth && settings.previousBalanceMonth) el.previousBalanceMonth.value = settings.previousBalanceMonth;
+                    el.dailyWorkHoursInput.value = settings.dailyWorkHours || "08:00";
+                    if(el.contractualStartTimeInput) el.contractualStartTimeInput.value = settings.contractualStartTime || "08:00";
+                    if(el.defaultLunchBreak) el.defaultLunchBreak.value = settings.defaultLunchBreak || "01:00";
+                    el.planDailyExtra.value = settings.planDailyExtra || "00:00";
+                    el.planStartDate.value = settings.planStartDate || "";
+                    el.planEndDate.value = settings.planEndDate || "";
+                    
+                    blockWeekends = settings.blockWeekends !== undefined ? settings.blockWeekends : true;
+                    
+                    if (settings.appSettings) {
+                        appSettings = Object.assign(appSettings, settings.appSettings);
+                    }
+                }
+                
+                applyCustomUserName();
+                applyViewMode();
+                applyPanelVisibilities();
+                
+                if (safeStorage.getItem(STORAGE_KEYS.DARK_MODE) === 'true') {
+                    document.documentElement.classList.add('dark');
+                }
+                return true;
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                workData = {};
+                holidays = {};
+                return false;
+            }
+        }
+        
+        function showSaveStatus() {
+            const status = el.saveStatus;
+            if(status) {
+                status.style.opacity = '1';
+                status.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    status.style.opacity = '0';
+                    status.style.transform = 'translateY(10px)';
+                }, 2000);
+            }
+        }
+        
+        function showAutoSaveStatus() {
+            const hasData = Object.keys(workData).length > 0;
+            if (hasData && el.saveStatus) {
+                const status = el.saveStatus;
+                status.innerHTML = '<i class="fas fa-database mr-2"></i> Dados em memória carregados!';
+                status.className = status.className.replace('bg-emerald-500', 'bg-blue-500');
+                status.style.opacity = '1';
+                status.style.transform = 'translateY(0)';
+                
+                setTimeout(() => {
+                    status.style.opacity = '0';
+                    status.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        status.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Dados guardados!';
+                        status.className = status.className.replace('bg-blue-500', 'bg-emerald-500');
+                    }, 300);
+                }, 1500);
+            }
+        }
+        
+        function renderCalendar() {
+            el.calendarGrid.innerHTML = '';
+            const y = currentDate.getFullYear(), m = currentDate.getMonth();
+            el.currentMonthYear.textContent = currentDate.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+            
+            const first = new Date(y, m, 1).getDay();
+            const totalDays = new Date(y, m + 1, 0).getDate();
+            const todayStr = formatDateKey(new Date());
+            
+            const planExtra = timeToMinutes(el.planDailyExtra.value);
+            const planStart = el.planStartDate.value ? new Date(el.planStartDate.value + 'T12:00:00') : null;
+            const planLimit = el.planEndDate.value ? new Date(el.planEndDate.value + 'T12:00:00') : null;
+
+            for(let i = 0; i < first; i++) el.calendarGrid.appendChild(document.createElement('div'));
+
+            for(let d = 1; d <= totalDays; d++) {
+                const date = new Date(y, m, d, 12, 0, 0);
+                const k = formatDateKey(date);
+                const data = workData[k] || {};
+                const isFDS = date.getDay() === 0 || date.getDay() === 6;
+                const isToday = k === todayStr;
+
+                const dayEl = document.createElement('div');
+                
+                let classes = `calendar-day p-1.5 sm:p-3 flex flex-col justify-between `;
+                
+                if (isFDS) {
+                    if (blockWeekends) {
+                        classes += `weekend-blocked pointer-events-none border border-transparent dark:border-slate-700 `;
+                    } else {
+                        classes += `weekend-unlocked cursor-pointer hover:border-amber-400 border border-transparent dark:border-slate-700 `;
+                    }
+                } else {
+                    if (data.isCompensationPeriod) {
+                        classes += `bg-pink-950/20 border border-pink-500/25 cursor-pointer hover:border-pink-500/50 `;
+                    } else {
+                        classes += `bg-[var(--bg-calendar-day)] border border-[var(--border-glow)] cursor-pointer hover:border-indigo-500/35 `;
+                    }
+                }
+                
+                const compareDate = new Date(k + 'T12:00:00');
+                const isPlanDay = !isFDS && planExtra > 0 && planStart && planLimit && compareDate >= planStart && compareDate <= planLimit && (!data.type || data.type === 'office');
+                
+                if (isPlanDay) {
+                    classes = classes.replace('border-indigo-500/10', 'border-blue-400/40');
+                    classes = classes.replace('border-[var(--border-glow)]', 'border-blue-400/40');
+                    classes += `border-dashed bg-[var(--bg-plan-day)] `;
+                }
+                
+                let hasPayoffHighlight = false;
+                if (payoffDateAccumulatedKey && k === payoffDateAccumulatedKey) {
+                    classes = classes.replace('border-blue-400/40', 'border-purple-400');
+                    classes += `ring-2 ring-purple-400/30 `;
+                    hasPayoffHighlight = true;
+                }
+                if (payoffDateYearlyKey && k === payoffDateYearlyKey) {
+                    classes = classes.replace('border-blue-400/40', 'border-blue-400');
+                    if (!hasPayoffHighlight) classes += `ring-2 ring-blue-400/30 `;
+                    hasPayoffHighlight = true;
+                }
+                
+                if (isToday) classes += `today `;
+                dayEl.className = classes;
+                
+                // Balão explicativo (tooltip nativo) com informações do dia
+                let dayTooltip = `Dia ${d}/${m + 1}/${y}`;
+                if (data.type) {
+                    const typeNames = {
+                        office: 'Trabalho',
+                        vacation: 'Férias',
+                        absence: 'Falta',
+                        holiday: 'Feriado',
+                        attestation: 'Atestado',
+                        compensation: 'Compensação',
+                        suspensao: 'Suspensão de Contrato'
+                    };
+                    dayTooltip += `\nTipo: ${typeNames[data.type] || data.type}`;
+                }
+                if (data.startTime) dayTooltip += `\nEntrada: ${data.startTime}`;
+                if (data.endTime) dayTooltip += `\nSaída: ${data.endTime}`;
+                if (data.lunchBreak !== undefined) dayTooltip += `\nAlmoço: ${minutesToTime(data.lunchBreak)}`;
+                if (holidays[k]) dayTooltip += `\nFeriado Oficial: ${holidays[k]}`;
+                if (data.isCompensationPeriod) dayTooltip += `\nPeríodo de Compensação`;
+                if (data.notes) dayTooltip += `\nObservações: ${data.notes}`;
+                dayEl.title = dayTooltip;
+                
+                let html = `<div class="flex justify-between items-start"><span class="text-xs font-black text-[var(--text-primary)]">${d}</span>`;
+                if (payoffDateAccumulatedKey && k === payoffDateAccumulatedKey) {
+                    html += `<div class="absolute -top-2.5 -right-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-1 border border-white dark:border-slate-950"><span>QUITA ATUAL! 💜</span></div>`;
+                } else if (payoffDateYearlyKey && k === payoffDateYearlyKey) {
+                    html += `<div class="absolute -top-2.5 -right-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-1 border border-white dark:border-slate-950"><span>QUITA ANUAL! 💎</span></div>`;
+                }
+                if(data.type) html += `<i class="fas ${getTypeIcon(data.type)} text-[10px] ${getTypeColor(data.type)}"></i>`;
+                if(data.notes && data.notes.trim() !== '') html += `<i class="fas fa-thumbtack text-[10px] text-amber-500 ml-1 drop-shadow-md" title="Tem anotações"></i>`;
+                html += `</div>`;
+                
+                if(data.type) html += `<div class="mt-1 text-[9px] font-bold uppercase truncate ${getTypeColor(data.type)}">${data.type}</div>`;
+                
+                const hasCustomPlan = data.customPlanDailyExtra && data.customPlanDailyExtra !== "00:00";
+                if(!isFDS && (planExtra > 0 || hasCustomPlan) && planStart && planLimit && compareDate >= planStart && compareDate <= planLimit && (!data.type || data.type === 'office')) {
+                    const displayExtra = hasCustomPlan ? timeToMinutes(data.customPlanDailyExtra) : planExtra;
+                    html += `<div class="mt-1 text-[8px] font-black text-plan uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/20 px-1 rounded"><i class="fas fa-clock mr-1"></i>+${minutesToTime(displayExtra)}</div>`;
+                }
+                
+                if(data.isCompensationPeriod && !isFDS) {
+                    const compLabel = data.compensationOf ? `REF: ${data.compensationOf}` : 'META OFICIAL';
+                    html += `<div class="mt-1 text-[8.5px] font-black text-pink-600 dark:text-pink-400 uppercase tracking-tighter bg-pink-100/50 dark:bg-pink-900/40 border border-pink-200/80 dark:border-pink-800/50 px-1.5 py-0.5 rounded-md shadow-sm"><i class="fas fa-bullseye mr-1"></i>${compLabel}</div>`;
+                }
+
+                const { balance } = getDayBalance(data, date);
+                if(balance !== 0) {
+                    html += `<div class="mt-auto text-right text-[10px] font-black ${balance>=0?'text-emerald-500':'text-rose-500'}">${balance>0?'+':''}${minutesToTime(balance)}</div>`;
+                }
+                
+                dayEl.innerHTML = html;
+                
+                dayEl.onclick = () => {
+                    if (isFDS && blockWeekends) return; 
+                    openDayDetails(date);
+                };
+                
+                el.calendarGrid.appendChild(dayEl);
+            }
+        }
+        
+        function renderSenacLegend() {
+            if (!el.senacLegendContainer) return;
+            
+            const events = [];
+            
+            Object.keys(workData).forEach(key => {
+                const data = workData[key];
+                if(data.imported || data.isCompensationPeriod || holidays[key]) {
+                    events.push({
+                        date: key,
+                        type: data.type || (data.isCompensationPeriod ? 'compensationPeriod' : 'holiday'),
+                        isPeriod: !!data.isCompensationPeriod
+                    });
+                }
+            });
+
+            if(events.length === 0) {
+                el.senacLegendContainer.innerHTML = '<p class="text-xs text-slate-400 italic col-span-full">Nenhuma data oficial importada do calendário ainda. Utilize a área de importação acima.</p>';
+                return;
+            }
+
+            events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let html = '';
+            events.forEach(ev => {
+                const d = new Date(ev.date + 'T12:00:00');
+                const dateStr = d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
+                
+                let label = '';
+                let colorClass = '';
+                let icon = '';
+
+                if(ev.isPeriod) {
+                    const dInfo = workData[ev.date];
+                    label = (dInfo && dInfo.compensationOf) ? `Período (Ref: ${dInfo.compensationOf})` : 'Meta Oficial';
+                    colorClass = 'text-pink-600 bg-pink-50 border-pink-100 dark:text-pink-400 dark:bg-pink-900/20 dark:border-pink-900/50';
+                    icon = 'fa-bullseye';
+                } else if (ev.type === 'holiday') {
+                    label = 'Feriado Oficial';
+                    colorClass = 'text-rose-600 bg-rose-50 border-rose-100 dark:text-rose-400 dark:bg-rose-900/20 dark:border-rose-900/50';
+                    icon = 'fa-flag';
+                } else if (ev.type === 'compensation') {
+                    label = 'Dia Ponte (Compensar)';
+                    colorClass = 'text-purple-600 bg-purple-50 border-purple-100 dark:text-purple-400 dark:bg-purple-900/20 dark:border-purple-900/50';
+                    icon = 'fa-balance-scale';
+                } else if (ev.type === 'suspensao') {
+                    label = 'Suspensão/Ponte';
+                    colorClass = 'text-slate-600 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
+                    icon = 'fa-ban';
+                } else {
+                    label = 'Evento Importado';
+                    colorClass = 'text-office bg-blue-50 border-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-900/50';
+                    icon = 'fa-calendar-check';
+                }
+
+                html += `
+                    <div class="p-3 rounded-2xl flex items-center gap-3 border transition-all hover:scale-105 shadow-sm ${colorClass}">
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm shrink-0 opacity-80">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-[11px] font-black uppercase tracking-widest">${dateStr}</span>
+                            <span class="text-[10px] font-bold opacity-80 truncate">${label}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            el.senacLegendContainer.innerHTML = html;
+        }
+        
+        function openDayDetails(date) {
+            selectedDay = date;
+            const key = formatDateKey(date);
+            const data = workData[key] || {};
+
+            el.modalDayTitle.textContent = date.toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            el.startTimeInput.value = data.startTime || '';
+            el.endTimeInput.value = data.endTime || '';
+            el.lunchBreakInput.value = data.lunchBreak !== undefined ? minutesToTime(data.lunchBreak) : el.defaultLunchBreak.value;
+            el.dayNotes.value = data.notes || '';
+            el.dayPlanExtra.value = data.customPlanDailyExtra || '00:00';
+            el.excusedDelay.checked = !!data.excusedDelay;
+            
+            el.rangeStartDate.value = key;
+            el.rangeEndDate.value = key;
+
+            if (data.type === 'attestation') {
+                el.fullDayAttestation.checked = data.isFullDay || false;
+                el.attWorkIn.value = data.attWorkIn || '';
+                el.attExitToDoc.value = data.attExitToDoc || '';
+                el.attDocIn.value = data.attDocIn || '';
+                el.attDocOut.value = data.attDocOut || '';
+                el.attReturnFromDoc.value = data.attReturnFromDoc || '';
+                el.attWorkOut.value = data.attWorkOut || '';
+            } else {
+                el.fullDayAttestation.checked = false;
+                el.attWorkIn.value = ''; el.attExitToDoc.value = '';
+                el.attDocIn.value = ''; el.attDocOut.value = '';
+                el.attReturnFromDoc.value = ''; el.attWorkOut.value = '';
+            }
+
+            const type = data.type || 'office';
+            updateModalUI(type);
+
+            el.dayDetailsModal.classList.remove('opacity-0', 'pointer-events-none');
+            calculateDayHours();
+        }
+        
+        function updateModalUI(type) {
+            document.querySelectorAll('.day-type-btn').forEach(btn => {
+                const active = btn.dataset.type === type;
+                btn.classList.toggle('ring-4', active);
+                btn.classList.toggle('ring-office', active);
+                btn.classList.toggle('bg-blue-50', active);
+                btn.classList.toggle('dark:bg-slate-700', active);
+            });
+            
+            const isWorkNormal = ['office', 'absence', 'compensation', 'holiday', 'suspensao'].includes(type);
+            const isAttestation = type === 'attestation';
+
+            el.workHoursContainer.classList.toggle('hidden', !isWorkNormal);
+            if (el.dayPlanExtraContainer) {
+                el.dayPlanExtraContainer.classList.toggle('hidden', !['office', 'compensation'].includes(type));
+            }
+            el.attestationForm.classList.toggle('hidden', !isAttestation);
+            
+            if(isAttestation) {
+                el.attestationTimeFields.classList.toggle('hidden', el.fullDayAttestation.checked);
+            }
+
+            calculateDayHours();
+        }
+        
+        function calculateDayHours() {
+            const activeBtn = document.querySelector('.day-type-btn.ring-4');
+            const type = activeBtn ? activeBtn.dataset.type : 'office';
+
+            let balance = 0;
+            let worked = 0;
+            
+            const isWeekend = selectedDay && (selectedDay.getDay() === 0 || selectedDay.getDay() === 6);
+            const daily = isWeekend ? 0 : timeToMinutes(el.dailyWorkHoursInput.value);
+
+            if (type === 'office') {
+                let start = el.startTimeInput.value;
+                const contractualStart = (el.contractualStartTimeInput && el.contractualStartTimeInput.value) || "08:00";
+                if (el.excusedDelay && el.excusedDelay.checked && start && timeToMinutes(start) > timeToMinutes(contractualStart)) {
+                    start = contractualStart;
+                }
+                const end = el.endTimeInput.value;
+                const lunch = timeToMinutes(el.lunchBreakInput.value);
+                worked = calculateHoursWorked(start, end, lunch);
+                balance = worked - daily;
+            } else if (type === 'attestation') {
+                if (el.fullDayAttestation.checked) {
+                    worked = daily;
+                    balance = 0;
+                } else {
+                    const workPre = calculateHoursWorked(el.attWorkIn.value, el.attExitToDoc.value, 0);
+                    const consult = calculateHoursWorked(el.attDocIn.value, el.attDocOut.value, 0);
+                    const workPost = calculateHoursWorked(el.attReturnFromDoc.value, el.attWorkOut.value, 0);
+                    worked = workPre + consult + workPost;
+                    balance = worked - daily;
+                }
+            } else if (['vacation', 'holiday', 'suspensao'].includes(type)) {
+                worked = 0; balance = 0;
+            } else if (['absence', 'compensation'].includes(type)) {
+                worked = 0; balance = -daily;
+            }
+
+            if (balance < 0 && el.excusedDelay && el.excusedDelay.checked) {
+                balance = 0;
+            }
+
+            const balanceColor = balance > 0 ? 'text-emerald-500' : (balance < 0 ? 'text-rose-500' : 'text-slate-500');
+            el.daySummary.innerHTML = `Efetivo Calculado: <strong class="text-blue-500">${minutesToTime(worked)}</strong> &nbsp;|&nbsp; Saldo: <strong class="${balanceColor}">${balance >= 0 ? '+' : ''}${minutesToTime(balance)}</strong>`;
+            
+            el.daySummary.classList.add('bg-slate-200', 'dark:bg-slate-700');
+            setTimeout(() => { el.daySummary.classList.remove('bg-slate-200', 'dark:bg-slate-700'); }, 200);
+        }
+        
+        function saveDayData() {
+            if (!selectedDay) return;
+            const activeBtn = document.querySelector('.day-type-btn.ring-4');
+            const type = activeBtn ? activeBtn.dataset.type : 'office';
+            const notes = el.dayNotes.value;
+            const excusedDelay = el.excusedDelay.checked;
+            
+            const s = new Date(el.rangeStartDate.value + 'T12:00:00');
+            const e = new Date(el.rangeEndDate.value + 'T12:00:00');
+            
+            if(s > e) {
+                showNotification('Data de início maior que data de fim!', 'error');
+                return;
+            }
+            
+            let count = 0;
+            for(let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+                const isFDS = d.getDay() === 0 || d.getDay() === 6;
+                if(isFDS && blockWeekends) continue;
+
+                const k = formatDateKey(d);
+                const obj = { type, notes, excusedDelay };
+                
+                if(type === 'attestation') {
+                    obj.isFullDay = el.fullDayAttestation.checked;
+                    if(!obj.isFullDay) {
+                        obj.attWorkIn = el.attWorkIn.value; 
+                        obj.attExitToDoc = el.attExitToDoc.value;
+                        obj.attDocIn = el.attDocIn.value; 
+                        obj.attDocOut = el.attDocOut.value;
+                        obj.attReturnFromDoc = el.attReturnFromDoc.value; 
+                        obj.attWorkOut = el.attWorkOut.value;
+                    }
+                } else if (['office', 'compensation', 'absence', 'holiday', 'suspensao'].includes(type)) {
+                    obj.startTime = el.startTimeInput.value; 
+                    obj.endTime = el.endTimeInput.value; 
+                    obj.lunchBreak = timeToMinutes(el.lunchBreakInput.value);
+                    obj.customPlanDailyExtra = el.dayPlanExtra.value;
+                }
+                
+                workData[k] = { ...workData[k], ...obj };
+                count++;
+            }
+            
+            if(count > 1) {
+                showNotification(`Registo replicado em ${count} dias!`, 'success');
+            } else if (count === 1) {
+                showNotification(`Lançamento guardado!`, 'success');
+            } else {
+                showNotification(`Nenhum dia guardado (FDS bloqueados?)`, 'error');
+            }
+            
+            saveAllData();
+            renderCalendar();
+            updateChart();
+            updateBalances();
+            closeDayModal();
+        }
+        
+        function deleteDayData() {
+            if (!selectedDay) return;
+            
+            const s = new Date(el.rangeStartDate.value + 'T12:00:00');
+            const e = new Date(el.rangeEndDate.value + 'T12:00:00');
+            
+            if(s > e) {
+                showNotification('Data de início maior que data de fim!', 'error');
+                return;
+            }
+            
+            let count = 0;
+            for(let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+                const isFDS = d.getDay() === 0 || d.getDay() === 6;
+                if(isFDS && blockWeekends) continue;
+
+                const k = formatDateKey(d);
+                if (workData[k]) {
+                    const isImportedOrComp = workData[k].isCompensationPeriod || workData[k].imported || holidays[k] || ['holiday', 'compensation', 'suspensao'].includes(workData[k].type);
+                    
+                    if (isImportedOrComp) {
+                        // Limpa horários manuais de trabalho e atestados, mantendo a classificação oficial
+                        delete workData[k].startTime;
+                        delete workData[k].endTime;
+                        delete workData[k].lunchBreak;
+                        delete workData[k].notes;
+                        delete workData[k].isFullDay;
+                        delete workData[k].attWorkIn;
+                        delete workData[k].attExitToDoc;
+                        delete workData[k].attDocIn;
+                        delete workData[k].attDocOut;
+                        delete workData[k].attReturnFromDoc;
+                        delete workData[k].attWorkOut;
+                        delete workData[k].excusedDelay;
+                        
+                        // Se o tipo foi alterado, tenta reverter para o tipo oficial
+                        if (holidays[k]) {
+                            workData[k].type = 'holiday';
+                        } else if (workData[k].isCompensationPeriod && workData[k].type !== 'compensation' && workData[k].type !== 'suspensao') {
+                            // Se foi marcado como período de compensação mas o tipo mudou, mantém como período
+                        }
+                    } else {
+                        delete workData[k];
+                    }
+                    count++;
+                }
+            }
+            
+            if(count > 1) {
+                showNotification(`${count} dias apagados com sucesso.`, 'success');
+            } else {
+                showNotification('Registo do dia apagado.', 'success');
+            }
+            
+            saveAllData();
+            renderCalendar();
+            updateChart();
+            updateBalances();
+            renderSenacLegend();
+            closeDayModal();
+        }
+        
+        function getDayBalance(data, date) {
+            if (!date) return { balance: 0, worked: 0 };
+            if (!data.type) return { balance: 0, worked: 0 };
+            
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            const daily = isWeekend ? 0 : timeToMinutes(el.dailyWorkHoursInput.value);
+
+            let res = { balance: 0, worked: 0 };
+
+            if (data.type === 'attestation') {
+                if (data.isFullDay) {
+                    res = { balance: 0, worked: daily };
+                } else {
+                    const workPre = calculateHoursWorked(data.attWorkIn, data.attExitToDoc, 0);
+                    const consult = calculateHoursWorked(data.attDocIn, data.attDocOut, 0);
+                    const workPost = calculateHoursWorked(data.attReturnFromDoc, data.attWorkOut, 0);
+                    const worked = workPre + consult + workPost;
+                    res = { balance: worked - daily, worked };
+                }
+            } else if (['vacation', 'holiday', 'suspensao'].includes(data.type)) {
+                res = { balance: 0, worked: 0 };
+            } else if (data.type === 'office' && (!data.startTime || !data.endTime)) {
+                res = { balance: 0, worked: 0 };
+            } else if (['absence', 'compensation'].includes(data.type)) {
+                res = { balance: -daily, worked: 0 };
+            } else {
+                let start = data.startTime;
+                const contractualStart = (el.contractualStartTimeInput && el.contractualStartTimeInput.value) || "08:00";
+                if (data.excusedDelay && start && timeToMinutes(start) > timeToMinutes(contractualStart)) {
+                    start = contractualStart;
+                }
+                const lunch = data.lunchBreak !== undefined ? data.lunchBreak : timeToMinutes(el.defaultLunchBreak.value);
+                const worked = calculateHoursWorked(start, data.endTime, lunch);
+                res = { balance: worked - daily, worked };
+            }
+
+            if (res.balance < 0 && data.excusedDelay) {
+                res.balance = 0;
+            }
+            return res;
+        }
+        
+        function flashLiveTrackerElement(element) {
+            if(!element) return;
+            element.classList.remove('flash-highlight');
+            void element.offsetWidth; 
+            element.classList.add('flash-highlight');
+        }
+
+        function updateBalances() {
+            const initialBalanceStr = el.previousBalanceInput.value || "00:00";
+            const initialBalance = timeToMinutes(initialBalanceStr);
+            
+            let baseYear = currentDate.getFullYear() - 1;
+            let baseMonth = 11;
+            
+            if (el.previousBalanceMonth && el.previousBalanceMonth.value) {
+                const parts = el.previousBalanceMonth.value.split('-');
+                baseYear = parseInt(parts[0], 10);
+                baseMonth = parseInt(parts[1], 10) - 1;
+            }
+            
+            const baseMonthValue = baseYear * 12 + baseMonth;
+            
+            const monthlyBalances = {};
+            Object.keys(workData).forEach(k => {
+                const d = new Date(k + 'T12:00:00'); 
+                
+                const { balance } = getDayBalance(workData[k], d);
+                if (balance !== 0) {
+                    const mKey = `${d.getFullYear()}-${d.getMonth()}`;
+                    monthlyBalances[mKey] = (monthlyBalances[mKey] || 0) + balance;
+                }
+            });
+            
+            const nowY = currentDate.getFullYear();
+            const nowM = currentDate.getMonth();
+            const targetMonthValue = nowY * 12 + nowM;
+            
+            let carriedBal = initialBalance;
+            
+            if (targetMonthValue > baseMonthValue) {
+                for (let i = baseMonthValue + 1; i < targetMonthValue; i++) {
+                    const y = Math.floor(i / 12);
+                    const m = i % 12;
+                    carriedBal += (monthlyBalances[`${y}-${m}`] || 0);
+                }
+            } else if (targetMonthValue <= baseMonthValue) {
+                for (let i = baseMonthValue; i >= targetMonthValue; i--) {
+                    const y = Math.floor(i / 12);
+                    const m = i % 12;
+                    carriedBal -= (monthlyBalances[`${y}-${m}`] || 0);
+                }
+            }
+            
+            const currentMonthKey = `${nowY}-${nowM}`;
+            const mBal = monthlyBalances[currentMonthKey] || 0;
+            const aBal = carriedBal + mBal;
+            
+            let carriedIntoJan = initialBalance;
+            const janValue = nowY * 12;
+            if (janValue > baseMonthValue) {
+                for (let i = baseMonthValue + 1; i < janValue; i++) {
+                    const y = Math.floor(i / 12);
+                    const m = i % 12;
+                    carriedIntoJan += (monthlyBalances[`${y}-${m}`] || 0);
+                }
+            } else if (janValue <= baseMonthValue) {
+                for (let i = baseMonthValue; i >= janValue; i--) {
+                    const y = Math.floor(i / 12);
+                    const m = i % 12;
+                    carriedIntoJan -= (monthlyBalances[`${y}-${m}`] || 0);
+                }
+            }
+            
+            let yBalSum = 0;
+            for (let m = 0; m < 12; m++) {
+                yBalSum += (monthlyBalances[`${nowY}-${m}`] || 0);
+            }
+            const yearlyTotal = carriedIntoJan + yBalSum;
+            
+            if(el.carriedBalanceDisplay) {
+                el.carriedBalanceDisplay.innerText = minutesToTime(carriedBal);
+                el.carriedBalanceDisplay.className = `text-2xl sm:text-4xl font-black relative z-10 transition-colors ${carriedBal >= 0 ? 'text-emerald-500' : 'text-rose-400'}`;
+            }
+
+            el.monthBalanceDisplay.textContent = minutesToTime(mBal);
+            el.accumulatedBalanceDisplay.textContent = minutesToTime(aBal);
+            el.yearlyBalanceDisplay.textContent = minutesToTime(yearlyTotal);
+            
+            if (el.yearlyTitleDisplay) {
+                el.yearlyTitleDisplay.textContent = `Banco ${nowY}`;
+            }
+            
+            // Calcular Créditos Acumulados (Horas extras positivas) e Atrasos/Débitos do ano vigente
+            let yearlyCredits = 0;
+            let yearlyDebits = 0;
+            
+            Object.keys(workData).forEach(k => {
+                const d = new Date(k + 'T12:00:00');
+                if (d.getFullYear() === nowY) {
+                    const data = workData[k];
+                    const { balance } = getDayBalance(data, d);
+                    if (balance > 0) {
+                        yearlyCredits += balance;
+                    } else if (balance < 0) {
+                        yearlyDebits += Math.abs(balance);
+                    }
+                }
+            });
+            
+            if (el.yearlyRequiredDisplay) {
+                el.yearlyRequiredDisplay.textContent = `+${minutesToTime(yearlyCredits)}`;
+            }
+            if (el.yearlyAtrasosDisplay) {
+                el.yearlyAtrasosDisplay.textContent = `-${minutesToTime(yearlyDebits)}`;
+            }
+            
+            el.monthBalanceDisplay.className = `text-2xl sm:text-4xl font-black relative z-10 ${mBal>=0?'text-emerald-500' : 'text-rose-400'}`;
+            el.accumulatedBalanceDisplay.className = `text-2xl sm:text-4xl font-black relative z-10 ${aBal >= 0 ? 'text-emerald-500' : 'text-rose-400'}`;
+            el.yearlyBalanceDisplay.className = `text-2xl sm:text-4xl font-black relative z-10 ${yearlyTotal >= 0 ? 'text-emerald-500' : 'text-rose-400'}`;
+            
+            let sumPositiveExtras = 0;
+            
+            Object.keys(workData).forEach(k => {
+                const d = new Date(k + 'T12:00:00');
+                const data = workData[k];
+                const { balance } = getDayBalance(data, d);
+                
+                if (balance !== 0) {
+                    const monthVal = d.getFullYear() * 12 + d.getMonth();
+                    
+                    if (monthVal > baseMonthValue) {
+                        if (balance > 0) {
+                            sumPositiveExtras += balance; 
+                        }
+                    }
+                }
+            });
+
+            let updatedSaldoAnterior = initialBalance + sumPositiveExtras;
+
+            if (initialBalance < 0 && updatedSaldoAnterior > 0) {
+                updatedSaldoAnterior = 0;
+            }
+
+            let saldoAcumulado = aBal;
+            let bancoTotalLive = yearlyTotal;
+
+            if(el.rtCarriedDebt && el.rtCarriedDebt.textContent !== minutesToTime(updatedSaldoAnterior)) {
+                el.rtCarriedDebt.textContent = minutesToTime(updatedSaldoAnterior);
+                el.rtCarriedDebt.className = `text-xl font-black tracking-tighter transition-all duration-200 ${updatedSaldoAnterior >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                flashLiveTrackerElement(el.rtCarriedDebt);
+            }
+            if(el.rtAccumulated && el.rtAccumulated.textContent !== minutesToTime(saldoAcumulado)) {
+                el.rtAccumulated.textContent = minutesToTime(saldoAcumulado);
+                el.rtAccumulated.className = `text-xl font-black tracking-tighter transition-all duration-200 ${saldoAcumulado >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                flashLiveTrackerElement(el.rtAccumulated);
+            }
+            if(el.rtTotalDebt && el.rtTotalDebt.textContent !== minutesToTime(bancoTotalLive)) {
+                el.rtTotalDebt.textContent = minutesToTime(bancoTotalLive);
+                el.rtTotalDebt.className = `text-xl font-black tracking-tighter transition-all duration-200 ${bancoTotalLive >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                flashLiveTrackerElement(el.rtTotalDebt);
+            }
+
+            updateSimulationSummary(monthlyBalances, baseMonthValue, initialBalance, aBal, yearlyTotal);
+        }
+        
+        function updateSimulationSummary(monthlyBalances, baseMonthValue, initialBalance, realAccumulated, yearlyTotal) {
+            const planExtra = timeToMinutes(el.planDailyExtra.value);
+            const startStr = el.planStartDate.value;
+            const limitStr = el.planEndDate.value;
+            
+            if (!startStr || !limitStr || planExtra <= 0) {
+                if (el.simPayoffDateAccumulated) el.simPayoffDateAccumulated.textContent = "Defina a Meta Azul";
+                if (el.simWorkingDaysAccumulated) el.simWorkingDaysAccumulated.innerHTML = "Configure as opções de planejamento abaixo.";
+                if (el.simPayoffDateYearly) el.simPayoffDateYearly.textContent = "Defina a Meta Azul";
+                if (el.simWorkingDaysYearly) el.simWorkingDaysYearly.innerHTML = "Configure as opções de planejamento abaixo.";
+                
+                if (el.simDailyExtraVal) el.simDailyExtraVal.textContent = "00:00";
+                if (el.simTotalDeduction) el.simTotalDeduction.textContent = "00:00";
+                if (el.simProgressPct) el.simProgressPct.textContent = "0% do débito";
+                if (el.simImpactAccumulated) el.simImpactAccumulated.textContent = "00:00";
+                if (el.simImpactYearly) el.simImpactYearly.textContent = "00:00";
+                if (el.simProgressBar) el.simProgressBar.style.width = "0%";
+                
+                const oldPayoffAcc = payoffDateAccumulatedKey;
+                const oldPayoffYr = payoffDateYearlyKey;
+                payoffDateAccumulatedKey = null;
+                payoffDateYearlyKey = null;
+                if (payoffDateAccumulatedKey !== oldPayoffAcc || payoffDateYearlyKey !== oldPayoffYr) renderCalendar();
+                return;
+            }
+            
+            let startDate = new Date(startStr + 'T12:00:00');
+            const limit = new Date(limitStr + 'T12:00:00');
+            
+            const today = new Date();
+            today.setHours(12, 0, 0, 0);
+            if (today > startDate) {
+                startDate = today;
+            }
+            
+            if (startDate > limit) {
+                if (el.simPayoffDateAccumulated) el.simPayoffDateAccumulated.textContent = "Data Inválida";
+                if (el.simPayoffDateYearly) el.simPayoffDateYearly.textContent = "Data Inválida";
+                return;
+            }
+            
+            let tempSimAcc = realAccumulated;
+            let tempSimYr = yearlyTotal;
+            
+            let daysNeededAcc = 0;
+            let targetPayoffDateAcc = null;
+            let payoffKeyAcc = null;
+            
+            let daysNeededYr = 0;
+            let targetPayoffDateYr = null;
+            let payoffKeyYr = null;
+            
+            let totalPlanAbated = 0;
+            let totalWorkDaysInPlan = 0;
+            
+            let d = new Date(startDate);
+            while (d <= limit) {
+                const k = formatDateKey(d);
+                const isFDS = d.getDay() === 0 || d.getDay() === 6;
+                if (!isFDS && (!workData[k]?.type || workData[k].type === 'office')) {
+                    let dayExtra = planExtra;
+                    if (workData[k]?.customPlanDailyExtra && workData[k].customPlanDailyExtra !== "00:00") {
+                        dayExtra = timeToMinutes(workData[k].customPlanDailyExtra);
+                    }
+                    totalWorkDaysInPlan++;
+                    totalPlanAbated += dayExtra;
+                    
+                    // Simular para Saldo Acumulado
+                    if (tempSimAcc < 0) {
+                        tempSimAcc += dayExtra;
+                        daysNeededAcc++;
+                        if (tempSimAcc >= 0) {
+                            targetPayoffDateAcc = new Date(d);
+                            payoffKeyAcc = k;
+                        }
+                    }
+                    
+                    // Simular para Saldo Anual
+                    if (tempSimYr < 0) {
+                        tempSimYr += dayExtra;
+                        daysNeededYr++;
+                        if (tempSimYr >= 0) {
+                            targetPayoffDateYr = new Date(d);
+                            payoffKeyYr = k;
+                        }
+                    }
+                }
+                d.setDate(d.getDate() + 1);
+            }
+            
+            // Atualizar valores do painel
+            if (el.simDailyExtraVal) el.simDailyExtraVal.textContent = `+${minutesToTime(planExtra)}`;
+            if (el.simTotalDeduction) el.simTotalDeduction.textContent = `-${minutesToTime(totalPlanAbated)}`;
+            
+            const extraStr = minutesToTime(planExtra);
+            
+            // 1. Renderizar Saldo Acumulado (Dívida Atual)
+            if (realAccumulated >= 0) {
+                if (el.simPayoffDateAccumulated) el.simPayoffDateAccumulated.innerHTML = "Já Quitado! 🎉";
+                if (el.simWorkingDaysAccumulated) el.simWorkingDaysAccumulated.innerHTML = "Seu saldo acumulado atual já está positivo.";
+                payoffKeyAcc = null;
+            } else {
+                const remains = Math.abs(realAccumulated) - totalPlanAbated;
+                if (targetPayoffDateAcc) {
+                    const formattedDate = targetPayoffDateAcc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    const formattedDateFull = targetPayoffDateAcc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    if (el.simPayoffDateAccumulated) el.simPayoffDateAccumulated.textContent = formattedDateFull;
+                    if (el.simWorkingDaysAccumulated) el.simWorkingDaysAccumulated.innerHTML = `Fazendo <strong class="text-blue-300">${extraStr}</strong>/dia, quita o saldo de <strong class="text-rose-300">${minutesToTime(Math.abs(realAccumulated))}h</strong> em <strong class="text-emerald-400">${daysNeededAcc}</strong> dias úteis (fim em <strong class="text-amber-400">${formattedDate}</strong>).`;
+                } else {
+                    if (el.simPayoffDateAccumulated) el.simPayoffDateAccumulated.textContent = "Sem Previsão ⚠️";
+                    if (el.simWorkingDaysAccumulated) el.simWorkingDaysAccumulated.innerHTML = `Plano de <strong class="text-slate-300">${totalWorkDaysInPlan}</strong> dias úteis abaterá <strong class="text-emerald-400">${minutesToTime(totalPlanAbated)}h</strong>, restando <strong class="text-rose-400">${minutesToTime(remains)}h</strong>.`;
+                }
+            }
+            
+            // 2. Renderizar Saldo Anual (Meta Anual)
+            if (yearlyTotal >= 0) {
+                if (el.simPayoffDateYearly) el.simPayoffDateYearly.innerHTML = "Já Quitado! 🎉";
+                if (el.simWorkingDaysYearly) el.simWorkingDaysYearly.innerHTML = "Seu saldo anual de 2026 já está positivo.";
+                payoffKeyYr = null;
+            } else {
+                const remains = Math.abs(yearlyTotal) - totalPlanAbated;
+                if (targetPayoffDateYr) {
+                    const formattedDate = targetPayoffDateYr.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    const formattedDateFull = targetPayoffDateYr.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    if (el.simPayoffDateYearly) el.simPayoffDateYearly.textContent = formattedDateFull;
+                    if (el.simWorkingDaysYearly) el.simWorkingDaysYearly.innerHTML = `Fazendo <strong class="text-blue-300">${extraStr}</strong>/dia, quita o banco anual de <strong class="text-rose-300">${minutesToTime(Math.abs(yearlyTotal))}h</strong> em <strong class="text-emerald-400">${daysNeededYr}</strong> dias úteis (fim em <strong class="text-amber-400">${formattedDate}</strong>).`;
+                } else {
+                    if (el.simPayoffDateYearly) el.simPayoffDateYearly.textContent = "Sem Previsão ⚠️";
+                    if (el.simWorkingDaysYearly) el.simWorkingDaysYearly.innerHTML = `Plano de <strong class="text-slate-300">${totalWorkDaysInPlan}</strong> dias úteis abaterá <strong class="text-emerald-400">${minutesToTime(totalPlanAbated)}h</strong>, restando <strong class="text-rose-400">${minutesToTime(remains)}h</strong>.`;
+                }
+            }
+            
+            // Barra de Progresso do Saldo Acumulado (principal foco de débito do funcionário)
+            if (realAccumulated >= 0) {
+                if (el.simProgressPct) el.simProgressPct.textContent = "100% quitado";
+                if (el.simProgressBar) el.simProgressBar.style.width = "100%";
+            } else {
+                let pct = Math.min(100, Math.round((totalPlanAbated / Math.abs(realAccumulated)) * 100));
+                if (el.simProgressPct) el.simProgressPct.textContent = `${pct}% do débito`;
+                if (el.simProgressBar) el.simProgressBar.style.width = `${pct}%`;
+            }
+            
+            if (el.simImpactAccumulated) {
+                const finalAccumulated = realAccumulated + totalPlanAbated;
+                el.simImpactAccumulated.innerHTML = `<span class="opacity-60 text-xs">${minutesToTime(realAccumulated)}</span> &nbsp;→&nbsp; <span class="font-extrabold ${finalAccumulated >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${minutesToTime(finalAccumulated)}</span>`;
+            }
+            if (el.simImpactYearly) {
+                const finalYearly = yearlyTotal + totalPlanAbated;
+                el.simImpactYearly.innerHTML = `<span class="opacity-60 text-xs">${minutesToTime(yearlyTotal)}</span> &nbsp;→&nbsp; <span class="font-extrabold ${finalYearly >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${minutesToTime(finalYearly)}</span>`;
+            }
+            
+            const oldPayoffAcc = payoffDateAccumulatedKey;
+            const oldPayoffYr = payoffDateYearlyKey;
+            payoffDateAccumulatedKey = payoffKeyAcc;
+            payoffDateYearlyKey = payoffKeyYr;
+            
+            if (payoffDateAccumulatedKey !== oldPayoffAcc || payoffDateYearlyKey !== oldPayoffYr) {
+                renderCalendar();
+            }
+        }
+        
+        function parseAndApplyImportedData(text) {
+            if(!text) return;
+            const lines = text.split('\n').map(line => line.trim());
+            const monthMap = { 'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3, 'maio': 4, 'junho': 5, 'julho': 6, 'agosto': 7, 'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11, 'marco': 2 };
+            let currentMonth = -1, currentYear = currentDate.getFullYear(), totalFound = 0;
+
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if (!lowerLine) return;
+                
+                for (const mName in monthMap) { 
+                    if (lowerLine.includes(mName)) { 
+                        currentMonth = monthMap[mName]; 
+                        const yr = line.match(/(\d{4})/); 
+                        if (yr) currentYear = parseInt(yr[1]); 
+                    } 
+                }
+                
+                const compMatch = lowerLine.match(/compensacao\s+(?:do[s]?\s+dia[s]?\s+|de\s+)?([\d,\s+e\/]+)\s+ocorrera\s+no\s+periodo\s+(?:de\s+)?(\d{1,2}(?:\/\d{1,2})?(?:\/\d{4})?)\s+a\s+(\d{1,2}(?:\/\d{1,2})?(?:\/\d{4})?)/i);
+                if (compMatch) {
+                    const compensationTargetDay = compMatch[1].trim();
+
+                    const endDateParts = compMatch[3].split('/');
+                    const endMonth = endDateParts[1] ? parseInt(endDateParts[1]) - 1 : currentMonth;
+                    const endYear = endDateParts[2] ? parseInt(endDateParts[2]) : currentYear;
+                    
+                    const startDateParts = compMatch[2].split('/');
+                    const startMonth = startDateParts[1] ? parseInt(startDateParts[1]) - 1 : endMonth;
+                    const startYear = startDateParts[2] ? parseInt(startDateParts[2]) : endYear;
+
+                    const startDate = new Date(startYear, startMonth, parseInt(startDateParts[0]));
+                    const endDate = new Date(endYear, endMonth, parseInt(endDateParts[0]));
+
+                    if (startDate > endDate) endDate.setFullYear(endDate.getFullYear() + 1);
+
+                    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                        if (d.getDay() !== 0 && d.getDay() !== 6) {
+                            const k = formatDateKey(d);
+                            if (!workData[k]) workData[k] = {};
+                            workData[k].isCompensationPeriod = true;
+                            workData[k].compensationOf = compensationTargetDay;
+                        }
+                    }
+                    totalFound++;
+                    return;
+                }
+                
+                const dayMatch = lowerLine.match(/^dia (\d{1,2})/);
+                if (dayMatch && currentMonth !== -1) {
+                    const dNum = parseInt(dayMatch[1]);
+                    const key = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-${String(dNum).padStart(2,'0')}`;
+                    let type = lowerLine.includes('feriado') ? 'holiday' : 
+                               (lowerLine.includes('suspens') ? 'suspensao' : 
+                               (lowerLine.includes('compensa') ? 'compensation' : null));
+                    if (type) {
+                        if (type === 'holiday') holidays[key] = true;
+                        workData[key] = { ...workData[key], type, imported: true };
+                        totalFound++;
+                    }
+                }
+            });
+            
+            saveAllData(); 
+            renderCalendar(); 
+            updateChart(); 
+            updateBalances();
+            renderSenacLegend();
+            showNotification(`${totalFound} eventos do calendário processados!`, 'success');
+        }
+        
+        function handleClockInImport(text) {
+            const lines = text.split('\n');
+            let daysUpdated = 0;
+            const defaultLunch = timeToMinutes(el.defaultLunchBreak.value);
+            
+            lines.forEach(line => {
+                // Procurar data no formato DD/MM/YY ou DD/MM/YYYY
+                const dateMatch = line.match(/\b(\d{2})\/(\d{2})\/(\d{2,4})\b/);
+                if (!dateMatch) return;
+                
+                const day = dateMatch[1];
+                const month = dateMatch[2];
+                let year = dateMatch[3];
+                if (year.length === 2) year = '20' + year;
+                const dateKey = `${year}-${month}-${day}`;
+                
+                // Extrair todos os horários HH:MM da linha
+                const timeRegex = /\b(\d{2}):(\d{2})\b/g;
+                const times = [];
+                let tMatch;
+                while ((tMatch = timeRegex.exec(line)) !== null) {
+                    times.push(tMatch[0]);
+                }
+                
+                let startTime = '';
+                let endTime = '';
+                let lunchBreak = defaultLunch;
+                
+                if (times.length >= 2) {
+                    startTime = times[0];
+                    endTime = times[times.length - 1];
+                    
+                    if (times.length >= 4) {
+                        const startLunch = timeToMinutes(times[1]);
+                        const endLunch = timeToMinutes(times[2]);
+                        if (endLunch > startLunch) {
+                            lunchBreak = endLunch - startLunch;
+                        }
+                    }
+                } else if (times.length === 1) {
+                    const tMins = timeToMinutes(times[0]);
+                    if (tMins < 720) {
+                        startTime = times[0];
+                    } else {
+                        endTime = times[0];
+                    }
+                }
+                
+                // Determinar o tipo do dia e observações baseado em palavras-chave da linha (coluna Motivo / Justificar)
+                let type = 'office';
+                let notes = '';
+                
+                const upperLine = line.toUpperCase();
+                if (upperLine.includes('FERIADO')) {
+                    type = 'holiday';
+                    const matched = line.match(/FERIADO\s*-\s*[A-Z\s]+/i) || line.match(/FERIADO/i);
+                    notes = matched ? matched[0].trim().toUpperCase() : 'FERIADO';
+                } else if (upperLine.includes('COMPENSAÇÃO') || upperLine.includes('COMPENSACAO')) {
+                    type = 'compensation';
+                    notes = 'COMPENSAÇÃO';
+                } else if (upperLine.includes('FALTA')) {
+                    type = 'absence';
+                    notes = 'Falta registrada no ponto';
+                } else if (upperLine.includes('ATESTADO')) {
+                    type = 'attestation';
+                    notes = 'Atestado médico / justificativa';
+                } else if (upperLine.includes('FÉRIAS') || upperLine.includes('FERIAS')) {
+                    type = 'vacation';
+                    notes = 'Férias';
+                } else if (upperLine.includes('SUSPENSÃO') || upperLine.includes('SUSPENSAO')) {
+                    type = 'suspensao';
+                    notes = 'Suspensão de Contrato';
+                }
+                
+                // Se o PDF tiver marcações ou observações, insere ou atualiza
+                if (startTime || endTime || type !== 'office' || notes) {
+                    if (!workData[dateKey]) workData[dateKey] = {};
+                    
+                    workData[dateKey].type = type;
+                    if (startTime) workData[dateKey].startTime = startTime;
+                    if (endTime) workData[dateKey].endTime = endTime;
+                    workData[dateKey].lunchBreak = lunchBreak;
+                    if (notes) workData[dateKey].notes = notes;
+                    
+                    daysUpdated++;
+                }
+            });
+            
+            // Se nenhum registro foi atualizado com a lógica de tabela, tentar a lógica legado de varredura geral
+            if (daysUpdated === 0) {
+                const regexLegacy = /(\d{2})\/(\d{2})\/(\d{4})\s*(\d{2}):(\d{2})/g;
+                const recordsLegacy = {};
+                let match;
+                while ((match = regexLegacy.exec(text)) !== null) {
+                    const day = match[1], month = match[2], year = match[3];
+                    const hour = parseInt(match[4], 10), minute = parseInt(match[5], 10);
+                    const timeStr = `${match[4]}:${match[5]}`;
+                    const dateKey = `${year}-${month}-${day}`;
+                    if (!recordsLegacy[dateKey]) recordsLegacy[dateKey] = [];
+                    recordsLegacy[dateKey].push({ hour, minute, timeStr });
+                }
+                
+                Object.keys(recordsLegacy).forEach(dateKey => {
+                    const times = recordsLegacy[dateKey];
+                    times.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
+                    let startTime = '', endTime = '';
+                    if (times.length === 1) {
+                        if (times[0].hour < 12) startTime = times[0].timeStr;
+                        else endTime = times[0].timeStr;
+                    } else if (times.length >= 2) {
+                        startTime = times[0].timeStr;
+                        endTime = times[times.length - 1].timeStr;
+                    }
+                    if (!workData[dateKey]) workData[dateKey] = {};
+                    workData[dateKey].type = 'office';
+                    if (startTime) workData[dateKey].startTime = startTime;
+                    if (endTime) workData[dateKey].endTime = endTime;
+                    if (workData[dateKey].lunchBreak === undefined) workData[dateKey].lunchBreak = defaultLunch;
+                    daysUpdated++;
+                });
+            }
+            
+            if(daysUpdated > 0) {
+                saveAllData(); renderCalendar(); updateChart(); updateBalances();
+                showNotification(`${daysUpdated} dias de ponto atualizados!`, 'success');
+            } else {
+                showNotification('Nenhum registo de ponto encontrado.', 'error');
+            }
+        }
+        
+        function handleCustomExport() {
+            const s = new Date(el.exportStartDateInput.value + 'T12:00:00');
+            const e = new Date(el.exportEndDateInput.value + 'T12:00:00');
+            
+            if(s > e) { showNotification('Data inicial maior que data final!', 'error'); return; }
+            
+            let csv = "Data;Dia;Tipo;Entrada;Saida;Almoco;HorasTrabalhadas;Saldo;MetaOficial;Notas\n";
+            
+            for(let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+                if(d.getDay() === 0 || d.getDay() === 6) continue;
+                const k = formatDateKey(d);
+                const val = workData[k] || {};
+                const { balance, worked } = getDayBalance(val, d);
+                const dayName = d.toLocaleDateString('pt-PT', { weekday: 'short' });
+                
+                const notasLimpas = val.notes ? val.notes.replace(/\n/g, ' ').replace(/"/g, '""') : '';
+
+                csv += `${k};${dayName};${val.type||''};${val.startTime||''};${val.endTime||''};`;
+                csv += `${val.lunchBreak !== undefined ? minutesToTime(val.lunchBreak) : ''};`;
+                csv += `${minutesToTime(worked)};${minutesToTime(balance)};`;
+                csv += `${val.isCompensationPeriod ? 'SIM' : 'NAO'};"${notasLimpas}"\n`;
+            }
+            
+            const a = document.createElement('a'); 
+            a.href = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(csv);
+            a.download = `relatorio_${s.toISOString().split('T')[0]}_a_${e.toISOString().split('T')[0]}.csv`; 
+            a.click();
+            showNotification('Relatório CSV gerado com sucesso!', 'success');
+            closeExportModal();
+        }
+        
+        function saveBackupData() {
+            const backup = {
+                workData,
+                holidays,
+                settings: {
+                    previousBalance: el.previousBalanceInput.value,
+                    previousBalanceMonth: el.previousBalanceMonth.value,
+                    dailyWorkHours: el.dailyWorkHoursInput.value,
+                    contractualStartTime: el.contractualStartTimeInput.value,
+                    defaultLunchBreak: el.defaultLunchBreak.value,
+                    planDailyExtra: el.planDailyExtra.value,
+                    planStartDate: el.planStartDate.value,
+                    planEndDate: el.planEndDate.value,
+                    blockWeekends: blockWeekends
+                },
+                darkMode: document.documentElement.classList.contains('dark'),
+                timestamp: new Date().toISOString()
+            };
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'}));
+            a.download = `backup_gestor_horas_${new Date().toISOString().split('T')[0]}.json`; 
+            a.click();
+            showNotification('Ficheiro de Backup descarregado!', 'success');
+        }
+        
+        async function handleFileImport(e) {
+            const f = e.target.files[0];
+            if(!f) return;
+            
+            if(f.name.endsWith('.json')) {
+                try {
+                    const t = await f.text(); 
+                    const j = JSON.parse(t);
+                    
+                    if (j.workData) workData = j.workData;
+                    if (j.holidays) holidays = j.holidays;
+                    
+                    if (j.settings) {
+                        el.previousBalanceInput.value = j.settings.previousBalance || "00:00";
+                        if(j.settings.previousBalanceMonth) el.previousBalanceMonth.value = j.settings.previousBalanceMonth;
+                        el.dailyWorkHoursInput.value = j.settings.dailyWorkHours || "08:00";
+                        if(el.contractualStartTimeInput) el.contractualStartTimeInput.value = j.settings.contractualStartTime || "08:00";
+                        if(el.defaultLunchBreak) el.defaultLunchBreak.value = j.settings.defaultLunchBreak || "01:00";
+                        el.planDailyExtra.value = j.settings.planDailyExtra || "00:00";
+                        if(j.settings.planStartDate) el.planStartDate.value = j.settings.planStartDate;
+                        if(j.settings.planEndDate) el.planEndDate.value = j.settings.planEndDate;
+                        if(j.settings.blockWeekends !== undefined) blockWeekends = j.settings.blockWeekends;
+                    }
+                    
+                    if (j.darkMode) {
+                        document.documentElement.classList.toggle('dark', j.darkMode);
+                    }
+                    
+                    saveAllData();
+                    updateWeekendToggleUI();
+                    renderCalendar(); updateChart(); updateBalances(); renderSenacLegend();
+                    showNotification('Dados de Backup restaurados perfeitamente!', 'success');
+                } catch(err) {
+                    showNotification('Falha ao ler o ficheiro JSON selecionado.', 'error');
+                }
+            }
+            e.target.value = '';
+        }
+        
+        function updateChart() {
+            updateRemainingWorkDays();
+
+            const ctx = document.getElementById('workChart').getContext('2d');
+            const types = ['office', 'vacation', 'absence', 'holiday', 'attestation', 'compensation', 'suspensao'];
+            
+            const m = currentDate.getMonth();
+            const counts = types.map(t => Object.keys(workData).filter(k => {
+                const d = new Date(k + 'T12:00:00');
+                return d.getMonth() === m && workData[k].type === t && d.getDay() !== 0 && d.getDay() !== 6;
+            }).length);
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Trabalho', 'Férias', 'Falta', 'Feriado', 'Atestado', 'Compensar', 'Suspensão'],
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#2563eb', '#f59e0b', '#64748b', '#ef4444', '#06b6d4', '#8b5cf6', '#94a3b8'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: { 
+                    cutout: '75%', 
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: { padding: 10 },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            titleFont: { family: 'Outfit', size: 13 },
+                            bodyFont: { family: 'Outfit', size: 12, weight: 'bold' },
+                            padding: 12,
+                            cornerRadius: 16,
+                            displayColors: true
+                        }
+                    } 
+                }
+            });
+        }
+
+        function updateRemainingWorkDays() {
+            const todayStr = formatDateKey(new Date());
+            const tempDate = new Date(todayStr + 'T12:00:00');
+            const year = currentDate.getFullYear();
+            const endOfYear = new Date(year, 11, 31, 12, 0, 0); 
+            
+            let count = 0;
+            
+            if (tempDate <= endOfYear) {
+                tempDate.setDate(tempDate.getDate() + 1); 
+                while (tempDate <= endOfYear) {
+                    const day = tempDate.getDay();
+                    if (day !== 0 && day !== 6) {
+                        const k = formatDateKey(tempDate);
+                        if (!holidays[k] && (!workData[k] || workData[k].type !== 'holiday')) count++;
+                    }
+                    tempDate.setDate(tempDate.getDate() + 1);
+                }
+            }
+            
+            const countEl = document.getElementById('remainingWorkDaysCount');
+            if (countEl) countEl.innerText = count;
+        }
+        
+        function formatDateKey(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function timeToMinutes(t) { 
+            if(!t) return 0; 
+            const str = t.toString().trim();
+            const isNegative = str.startsWith('-');
+            const timeStr = str.replace('-', '').trim();
+            const [h,m] = timeStr.split(':').map(Number); 
+            const total = (h || 0) * 60 + (m || 0);
+            return isNegative ? -total : total;
+        }
+        
+        function minutesToTime(m) { 
+            if (isNaN(m)) return '00:00';
+            const sign = m < 0 ? '-' : ''; 
+            const abs = Math.abs(m); 
+            return `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(Math.round(abs % 60)).padStart(2, '0')}`; 
+        }
+        
+        function calculateHoursWorked(start, end, lunchMinutes) { 
+            if(!start || !end) return 0; 
+            let startMins = timeToMinutes(start);
+            let endMins = timeToMinutes(end);
+            if (endMins < startMins) endMins += 1440;
+            const worked = endMins - startMins - lunchMinutes;
+            return Math.max(0, worked); 
+        }
+        
+        function getTypeIcon(t) { 
+            const i = {office:'fa-briefcase', vacation:'fa-umbrella-beach', absence:'fa-user-times', holiday:'fa-flag', attestation:'fa-hospital-user', compensation:'fa-balance-scale', suspensao:'fa-ban'}; 
+            return i[t] || 'fa-clock'; 
+        }
+        
+        function getTypeColor(t) { 
+            const c = {
+                office: 'text-blue-600 dark:text-blue-400',
+                vacation: 'text-amber-600 dark:text-amber-400',
+                absence: 'text-slate-600 dark:text-slate-300',
+                holiday: 'text-rose-600 dark:text-rose-400',
+                attestation: 'text-cyan-600 dark:text-cyan-400',
+                compensation: 'text-purple-650 dark:text-purple-400',
+                suspensao: 'text-slate-500 dark:text-slate-400'
+            }; 
+            return c[t] || 'text-slate-650 dark:text-slate-350'; 
+        }
+        
+        function closeDayModal() { el.dayDetailsModal.classList.add('opacity-0', 'pointer-events-none'); }
+        function closeExportModal() { el.exportModal.classList.add('opacity-0', 'pointer-events-none'); }
+        function closeClearModal() { el.clearModal.classList.add('opacity-0', 'pointer-events-none'); }
+        function openExportModal() { el.exportModal.classList.remove('opacity-0', 'pointer-events-none'); }
+        function openClearModal() { el.clearModal.classList.remove('opacity-0', 'pointer-events-none'); }
+        
+        function toggleTheme() { 
+            document.documentElement.classList.toggle('dark'); 
+            saveAllData(); 
+        }
+        
+        function handleClearData() {
+            workData = {}; holidays = {}; 
+            saveAllData(); renderCalendar(); updateChart(); updateBalances(); renderSenacLegend(); closeClearModal(); 
+            showNotification('O calendário foi completamente esvaziado.', 'success');
+        }
+
+        function resetPlanning() {
+            el.planDailyExtra.value = "00:00";
+            const today = new Date();
+            el.planStartDate.value = formatDateKey(today);
+            el.planEndDate.value = formatDateKey(new Date(today.getFullYear(), 11, 31));
+            
+            saveAllData();
+            renderCalendar();
+            updateChart();
+            updateBalances();
+            showNotification('Planeamento limpo com sucesso!', 'success');
+        }
+
+        function closeSettingsModal() { el.settingsModal.classList.add('opacity-0', 'pointer-events-none'); }
+        function openSettingsModal() {
+            if (el.cfgUserName) el.cfgUserName.value = appSettings.userName || '';
+            if (el.cfgAutoSave) el.cfgAutoSave.checked = appSettings.autoSave !== false;
+            if (el.cfgAutoBackup) el.cfgAutoBackup.checked = appSettings.autoBackup === true;
+            if (el.cfgBackupInterval) el.cfgBackupInterval.value = appSettings.backupInterval || 'every_save';
+            if (el.cfgViewMode) el.cfgViewMode.value = appSettings.viewMode || 'standard';
+            
+            if (el.cfgShowNotice) el.cfgShowNotice.checked = appSettings.showNotice !== false;
+            if (el.cfgShowChart) el.cfgShowChart.checked = appSettings.showChart !== false;
+            if (el.cfgShowSimulator) el.cfgShowSimulator.checked = appSettings.showSimulator !== false;
+            if (el.cfgShowImports) el.cfgShowImports.checked = appSettings.showImports !== false;
+            if (el.cfgShowLegend) el.cfgShowLegend.checked = appSettings.showLegend !== false;
+            if (el.cfgShowTracker) el.cfgShowTracker.checked = appSettings.showTracker !== false;
+            
+            renderLocalBackupHistory();
+            el.settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function applyCustomUserName() {
+            const titleEl = document.querySelector('h1');
+            if (titleEl) {
+                if (appSettings.userName && appSettings.userName.trim() !== '') {
+                    titleEl.innerHTML = `GESTOR DE ${appSettings.userName.toUpperCase()} <span class="text-[9px] px-2.5 py-1 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 font-black rounded-full uppercase tracking-widest border border-blue-500/20">PRO</span>`;
+                } else {
+                    titleEl.innerHTML = `GESTOR DE HORAS <span class="text-[9px] px-2.5 py-1 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 font-black rounded-full uppercase tracking-widest border border-blue-500/20">PRO</span>`;
+                }
+            }
+        }
+
+        function applyViewMode() {
+            document.body.classList.remove('layout-pocket', 'layout-detailed');
+            if (appSettings.viewMode === 'pocket') {
+                document.body.classList.add('layout-pocket');
+            } else if (appSettings.viewMode === 'detailed') {
+                document.body.classList.add('layout-detailed');
+            }
+        }
+
+        function applyPanelVisibilities() {
+            if (el.importantNoticePanel) el.importantNoticePanel.style.display = appSettings.showNotice !== false ? 'flex' : 'none';
+            if (el.chartPanel) el.chartPanel.style.display = appSettings.showChart !== false ? 'flex' : 'none';
+            if (el.simulatorPanel) el.simulatorPanel.style.display = appSettings.showSimulator !== false ? 'block' : 'none';
+            if (el.settingsSection) el.settingsSection.style.display = appSettings.showImports !== false ? 'grid' : 'none';
+            if (el.senacLegendPanel) el.senacLegendPanel.style.display = appSettings.showLegend !== false ? 'block' : 'none';
+            if (el.liveTrackerPanel) el.liveTrackerPanel.style.display = appSettings.showTracker !== false ? 'flex' : 'none';
+            
+            const analysisColumn = document.querySelector('.space-y-8.text-left');
+            const calendarColumn = document.querySelector('.lg\\:col-span-2.glass-panel');
+            
+            if (analysisColumn && calendarColumn) {
+                const showAnalysis = (appSettings.showChart !== false) || (appSettings.showSimulator !== false);
+                if (!showAnalysis) {
+                    analysisColumn.style.display = 'none';
+                    calendarColumn.className = calendarColumn.className.replace('lg:col-span-2', 'lg:col-span-3');
+                } else {
+                    analysisColumn.style.display = 'block';
+                    if (!calendarColumn.className.includes('lg:col-span-2')) {
+                        calendarColumn.className = calendarColumn.className.replace('lg:col-span-3', 'lg:col-span-2');
+                    }
+                }
+            }
+        }
+
+        function saveSettingsData() {
+            if (el.cfgUserName) appSettings.userName = el.cfgUserName.value.trim();
+            if (el.cfgAutoSave) appSettings.autoSave = el.cfgAutoSave.checked;
+            if (el.cfgAutoBackup) appSettings.autoBackup = el.cfgAutoBackup.checked;
+            if (el.cfgBackupInterval) appSettings.backupInterval = el.cfgBackupInterval.value;
+            if (el.cfgViewMode) appSettings.viewMode = el.cfgViewMode.value;
+            
+            if (el.cfgShowNotice) appSettings.showNotice = el.cfgShowNotice.checked;
+            if (el.cfgShowChart) appSettings.showChart = el.cfgShowChart.checked;
+            if (el.cfgShowSimulator) appSettings.showSimulator = el.cfgShowSimulator.checked;
+            if (el.cfgShowImports) appSettings.showImports = el.cfgShowImports.checked;
+            if (el.cfgShowLegend) appSettings.showLegend = el.cfgShowLegend.checked;
+            if (el.cfgShowTracker) appSettings.showTracker = el.cfgShowTracker.checked;
+            
+            saveAllData();
+            applyCustomUserName();
+            applyViewMode();
+            applyPanelVisibilities();
+            closeSettingsModal();
+            showNotification('Configurações salvas e aplicadas!', 'success');
+        }
+
+        function pushLocalBackup() {
+            try {
+                const historyStr = safeStorage.getItem('gestor_horas_local_history') || '[]';
+                const history = JSON.parse(historyStr);
+                
+                const snapshot = {
+                    timestamp: new Date().toISOString(),
+                    workData: workData,
+                    holidays: holidays,
+                    settings: {
+                        previousBalance: el.previousBalanceInput.value,
+                        previousBalanceMonth: el.previousBalanceMonth ? el.previousBalanceMonth.value : '',
+                        dailyWorkHours: el.dailyWorkHoursInput.value,
+                        contractualStartTime: el.contractualStartTimeInput.value,
+                        defaultLunchBreak: el.defaultLunchBreak.value,
+                        planDailyExtra: el.planDailyExtra.value,
+                        planStartDate: el.planStartDate.value,
+                        planEndDate: el.planEndDate.value
+                    }
+                };
+                
+                // Evita duplicar o último backup idêntico
+                if (history.length > 0) {
+                    const lastSnapshot = history[0];
+                    const lastComparison = JSON.stringify({
+                        workData: lastSnapshot.workData,
+                        holidays: lastSnapshot.holidays,
+                        settings: lastSnapshot.settings
+                    });
+                    const currentComparison = JSON.stringify({
+                        workData: snapshot.workData,
+                        holidays: snapshot.holidays,
+                        settings: snapshot.settings
+                    });
+                    if (lastComparison === currentComparison) {
+                        return; // Sem alteração real
+                    }
+                }
+                
+                history.unshift(snapshot);
+                if (history.length > 5) {
+                    history.pop();
+                }
+                
+                safeStorage.setItem('gestor_horas_local_history', JSON.stringify(history));
+            } catch (e) {
+                console.error('Erro ao gravar histórico local:', e);
+            }
+        }
+
+        function renderLocalBackupHistory() {
+            const container = el.localBackupHistoryContainer;
+            if (!container) return;
+            container.innerHTML = '';
+            
+            try {
+                const historyStr = safeStorage.getItem('gestor_horas_local_history') || '[]';
+                const history = JSON.parse(historyStr);
+                
+                if (history.length === 0) {
+                    container.innerHTML = '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center py-4">Nenhum backup local guardado ainda.</div>';
+                    return;
+                }
+                
+                history.forEach((snapshot, index) => {
+                    const date = new Date(snapshot.timestamp);
+                    const formattedDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    const recordCount = Object.keys(snapshot.workData || {}).length;
+                    
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50";
+                    div.innerHTML = `
+                        <div class="text-left">
+                            <div class="text-[10px] font-black text-slate-750 dark:text-slate-200">${formattedDate}</div>
+                            <div class="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider mt-0.5">${recordCount} dias com registos</div>
+                        </div>
+                        <button class="restore-backup-btn px-3 py-1.5 bg-purple-100 hover:bg-purple-600 text-purple-700 hover:text-white dark:bg-purple-950/40 dark:hover:bg-purple-600 dark:text-purple-400 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all" data-index="${index}">
+                            Restaurar
+                        </button>
+                    `;
+                    container.appendChild(div);
+                });
+                
+                // Associar evento aos botões de restauração
+                container.querySelectorAll('.restore-backup-btn').forEach(btn => {
+                    btn.onclick = (e) => {
+                        const idx = parseInt(e.target.getAttribute('data-index'));
+                        restoreLocalBackup(idx);
+                    };
+                });
+            } catch (e) {
+                console.error('Erro ao renderizar histórico de backups:', e);
+            }
+        }
+
+        function restoreLocalBackup(index) {
+            try {
+                const historyStr = safeStorage.getItem('gestor_horas_local_history') || '[]';
+                const history = JSON.parse(historyStr);
+                const snapshot = history[index];
+                
+                if (!snapshot) return;
+                
+                if (confirm('Deseja realmente restaurar os dados desta versão? As alterações atuais serão perdidas.')) {
+                    workData = snapshot.workData || {};
+                    holidays = snapshot.holidays || {};
+                    
+                    if (snapshot.settings) {
+                        el.previousBalanceInput.value = snapshot.settings.previousBalance || "00:00";
+                        if(el.previousBalanceMonth && snapshot.settings.previousBalanceMonth) el.previousBalanceMonth.value = snapshot.settings.previousBalanceMonth;
+                        el.dailyWorkHoursInput.value = snapshot.settings.dailyWorkHours || "08:00";
+                        if(el.contractualStartTimeInput) el.contractualStartTimeInput.value = snapshot.settings.contractualStartTime || "08:00";
+                        if(el.defaultLunchBreak) el.defaultLunchBreak.value = snapshot.settings.defaultLunchBreak || "01:00";
+                        el.planDailyExtra.value = snapshot.settings.planDailyExtra || "00:00";
+                        el.planStartDate.value = snapshot.settings.planStartDate || "";
+                        el.planEndDate.value = snapshot.settings.planEndDate || "";
+                    }
+                    
+                    saveAllData();
+                    renderCalendar();
+                    updateChart();
+                    updateBalances();
+                    renderSenacLegend();
+                    closeSettingsModal();
+                    showNotification('Dados restaurados com sucesso!', 'success');
+                }
+            } catch (e) {
+                console.error('Erro ao restaurar backup:', e);
+                showNotification('Erro ao restaurar dados.', 'error');
+            }
+        }
+
+        let lastDownloadTime = 0;
+        function triggerSilentBackupDownload(force = false) {
+            if (!appSettings.autoBackup) return;
+            
+            const now = Date.now();
+            
+            if (!force) {
+                let threshold = 0; // 'every_save': rate-limit de 25s
+                if (appSettings.backupInterval === 'hourly') {
+                    threshold = 60 * 60 * 1000;
+                } else if (appSettings.backupInterval === 'daily') {
+                    threshold = 24 * 60 * 60 * 1000;
+                } else if (appSettings.backupInterval === 'weekly') {
+                    threshold = 7 * 24 * 60 * 60 * 1000;
+                }
+                
+                const lastTime = Number(appSettings.lastFileBackupTime) || 0;
+                const timeDiff = now - lastTime;
+                
+                if (appSettings.backupInterval === 'every_save') {
+                    if (now - lastDownloadTime < 25000) return;
+                } else {
+                    if (timeDiff < threshold) return;
+                }
+            }
+            
+            lastDownloadTime = now;
+            appSettings.lastFileBackupTime = now;
+            
+            // Gravar o novo timestamp no localStorage para persistência imediata
+            try {
+                const settings = {
+                    previousBalance: el.previousBalanceInput.value,
+                    previousBalanceMonth: el.previousBalanceMonth ? el.previousBalanceMonth.value : '',
+                    dailyWorkHours: el.dailyWorkHoursInput.value,
+                    defaultLunchBreak: el.defaultLunchBreak.value,
+                    planDailyExtra: el.planDailyExtra.value,
+                    planStartDate: el.planStartDate.value,
+                    planEndDate: el.planEndDate.value,
+                    blockWeekends: blockWeekends,
+                    appSettings: appSettings
+                };
+                safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+            } catch(e) {
+                console.error(e);
+            }
+            
+            try {
+                const dataStr = JSON.stringify({
+                    workData: workData,
+                    holidays: holidays,
+                    settings: {
+                        previousBalance: el.previousBalanceInput.value,
+                        previousBalanceMonth: el.previousBalanceMonth ? el.previousBalanceMonth.value : '',
+                        dailyWorkHours: el.dailyWorkHoursInput.value,
+                        defaultLunchBreak: el.defaultLunchBreak.value,
+                        planDailyExtra: el.planDailyExtra.value,
+                        planStartDate: el.planStartDate.value,
+                        planEndDate: el.planEndDate.value,
+                        blockWeekends: blockWeekends,
+                        appSettings: appSettings
+                    }
+                }, null, 2);
+                
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `gestor_horas_backup_auto.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification('Backup guardado em ficheiro!', 'success');
+            } catch (e) {
+                console.error('Erro ao realizar download automático de backup:', e);
+            }
+        }
+
+        function checkLocalStorage() {
+            return true;
+        }
+
+        init();
+    });
+    </script>
+</body>
+</html>
