@@ -515,7 +515,7 @@
                 <p class="text-slate-400 text-xs leading-relaxed">
                     <span class="font-bold text-amber-400">ESTE NÃO É UM SISTEMA OFICIAL DA SUA EMPRESA.</span> 
                     Ferramenta pessoal desenvolvida para auxiliar no controlo de banco de horas.
-                    Atestados parciais abonam a consulta e o deslocamento necessário entre a empresa e o atendimento.
+                    O tempo de deslocação em atestados parciais não gera crédito.
                 </p>
             </div>
         </div>
@@ -839,14 +839,7 @@
                         <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">5. Retorno Trabalho</label><input type="time" id="attReturnFromDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
                         <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">6. Saída Final</label><input type="time" id="attWorkOut" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
                     </div>
-                    <div class="mt-3 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/20 text-[9px] text-cyan-200/90 leading-relaxed space-y-1.5">
-                        <p class="font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5"><i class="fas fa-info-circle"></i> Regras de Abono e Deslocamento:</p>
-                        <ul class="list-disc list-inside space-y-1 text-[8.5px] text-slate-300">
-                            <li><strong>Deslocamento Empresa ↔ Consulta:</strong> O tempo de trajeto de ida (trabalho → consulta) e volta (consulta → trabalho) é 100% abonado.</li>
-                            <li><strong>Direto de Casa p/ Consulta:</strong> Consulta antes ou no início do expediente abona o atraso na chegada. Se a consulta iniciar após o início do expediente, o período anterior é descontado.</li>
-                            <li><strong>Saída Antecipada p/ Casa:</strong> Consulta que encerra antes do fim do expediente sem retorno ao trabalho desconta o período restante até o fim da jornada.</li>
-                        </ul>
-                    </div>
+                    <p class="mt-3 text-[9px] text-slate-500 italic">* O sistema credita apenas as horas trabalhadas e o tempo de atestado. O tempo de deslocação não é somado.</p>
                 </div>
             </div>
 
@@ -1797,19 +1790,11 @@
                     worked = daily;
                     balance = 0;
                 } else {
-                    const attData = {
-                        isFullDay: false,
-                        attWorkIn: el.attWorkIn.value,
-                        attExitToDoc: el.attExitToDoc.value,
-                        attDocIn: el.attDocIn.value,
-                        attDocOut: el.attDocOut.value,
-                        attReturnFromDoc: el.attReturnFromDoc.value,
-                        attWorkOut: el.attWorkOut.value
-                    };
-                    const contractualStart = (el.contractualStartTimeInput && el.contractualStartTimeInput.value) || "08:00";
-                    const metrics = calculateAttestationMetrics(attData, daily, contractualStart, timeToMinutes(el.defaultLunchBreak.value));
-                    worked = metrics.worked;
-                    balance = metrics.balance;
+                    const workPre = calculateHoursWorked(el.attWorkIn.value, el.attExitToDoc.value, 0);
+                    const consult = calculateHoursWorked(el.attDocIn.value, el.attDocOut.value, 0);
+                    const workPost = calculateHoursWorked(el.attReturnFromDoc.value, el.attWorkOut.value, 0);
+                    worked = workPre + consult + workPost;
+                    balance = worked - daily;
                 }
             } else if (['vacation', 'holiday', 'suspensao'].includes(type)) {
                 worked = 0; balance = 0;
@@ -1962,9 +1947,11 @@
                 if (data.isFullDay) {
                     res = { balance: 0, worked: daily };
                 } else {
-                    const contractualStart = (el.contractualStartTimeInput && el.contractualStartTimeInput.value) || "08:00";
-                    const metrics = calculateAttestationMetrics(data, daily, contractualStart, timeToMinutes(el.defaultLunchBreak.value));
-                    res = { balance: metrics.balance, worked: metrics.worked };
+                    const workPre = calculateHoursWorked(data.attWorkIn, data.attExitToDoc, 0);
+                    const consult = calculateHoursWorked(data.attDocIn, data.attDocOut, 0);
+                    const workPost = calculateHoursWorked(data.attReturnFromDoc, data.attWorkOut, 0);
+                    const worked = workPre + consult + workPost;
+                    res = { balance: worked - daily, worked };
                 }
             } else if (['vacation', 'holiday', 'suspensao'].includes(data.type)) {
                 res = { balance: 0, worked: 0 };
@@ -2716,109 +2703,6 @@
             if (endMins < startMins) endMins += 1440;
             const worked = endMins - startMins - lunchMinutes;
             return Math.max(0, worked); 
-        }
-
-        function calculateAttestationMetrics(data, daily, contractualStartStr, defaultLunchMinutes) {
-            if (!data) return { worked: 0, balance: 0, excused: 0 };
-            if (data.isFullDay) {
-                return { worked: daily, balance: 0, excused: daily };
-            }
-
-            const contractualStart = timeToMinutes(contractualStartStr || "08:00");
-            const lunchMin = defaultLunchMinutes !== undefined ? defaultLunchMinutes : 60;
-            const contractualEnd = (contractualStart !== null) ? contractualStart + daily + lunchMin : 1020;
-
-            const tWorkIn = timeToMinutes(data.attWorkIn);
-            const tExitToDoc = timeToMinutes(data.attExitToDoc);
-            const tDocIn = timeToMinutes(data.attDocIn);
-            const tDocOut = timeToMinutes(data.attDocOut);
-            const tReturnFromDoc = timeToMinutes(data.attReturnFromDoc);
-            const tWorkOut = timeToMinutes(data.attWorkOut);
-
-            let workedPre = 0;
-            let workedPost = 0;
-            let excusedTime = 0;
-
-            // 1. Horas trabalhadas antes da saída para consulta
-            if (tWorkIn !== null && tExitToDoc !== null && tExitToDoc > tWorkIn) {
-                workedPre = tExitToDoc - tWorkIn;
-            } else if (tWorkIn !== null && tWorkOut !== null && tExitToDoc === null && tDocIn === null) {
-                workedPre = tWorkOut - tWorkIn;
-            }
-
-            // 2. Horas trabalhadas após o retorno da consulta
-            if (tReturnFromDoc !== null && tWorkOut !== null && tWorkOut > tReturnFromDoc) {
-                workedPost = tWorkOut - tReturnFromDoc;
-            }
-
-            // 3. Período Abonado (Consulta e deslocamentos regulamentares entre Empresa e Atendimento)
-            if (tDocIn !== null && tDocOut !== null && tDocOut >= tDocIn) {
-                const hasWorkBefore = (tWorkIn !== null && tExitToDoc !== null && tExitToDoc > tWorkIn);
-                const hasWorkAfter = (tReturnFromDoc !== null && tWorkOut !== null && tWorkOut > tReturnFromDoc);
-
-                if (hasWorkBefore && hasWorkAfter) {
-                    // Situação: Trabalhou, saiu para consulta e retornou ao trabalho (manhã/tarde)
-                    // Abona-se integralmente desde a saída da empresa até o retorno (deslocamento ida + consulta + deslocamento volta)
-                    const startAbono = (tExitToDoc !== null && tExitToDoc <= tDocIn) ? tExitToDoc : tDocIn;
-                    const endAbono = (tReturnFromDoc !== null && tReturnFromDoc >= tDocOut) ? tReturnFromDoc : tDocOut;
-                    excusedTime = Math.max(0, endAbono - startAbono);
-
-                } else if (!hasWorkBefore && hasWorkAfter) {
-                    // Situação: Ir direto para consulta de casa e chegar mais tarde ao trabalho
-                    // Trajeto casa-consulta NÃO é considerado; trajeto consulta-trabalho É abonado
-                    const arrivalWork = (tReturnFromDoc !== null) ? tReturnFromDoc : (tWorkIn !== null ? tWorkIn : tDocOut);
-                    const endAbono = Math.max(tDocOut, arrivalWork);
-
-                    if (contractualStart !== null && tDocIn <= contractualStart) {
-                        // Consulta inicia antes ou no início do expediente: atraso na chegada decorrente da consulta é 100% abonado
-                        excusedTime = Math.max(0, endAbono - contractualStart);
-                    } else if (contractualStart !== null) {
-                        // Consulta inicia após o início do expediente: desconta o período entre o início do expediente e o início da consulta
-                        excusedTime = Math.max(0, endAbono - tDocIn);
-                    } else {
-                        excusedTime = Math.max(0, endAbono - tDocIn);
-                    }
-
-                } else if (hasWorkBefore && !hasWorkAfter) {
-                    // Situação: Trabalhou, saiu para consulta e foi direto para casa (não retornou)
-                    // Trajeto trabalho-consulta É abonado; trajeto consulta-casa NÃO é considerado
-                    const startAbono = (tExitToDoc !== null && tExitToDoc <= tDocIn) ? tExitToDoc : tDocIn;
-
-                    if (contractualEnd !== null && tDocOut >= contractualEnd) {
-                        // Consulta termina no horário ou após o fim do expediente: abona até o fim da jornada contratual
-                        excusedTime = Math.max(0, contractualEnd - startAbono);
-                    } else if (contractualEnd !== null && tDocIn >= contractualEnd) {
-                        // Consulta inicia após o horário de trabalho: não há desconto se cumpriu o horário
-                        excusedTime = Math.max(0, Math.min(contractualEnd, tDocIn) - startAbono);
-                    } else if (contractualEnd !== null) {
-                        // Consulta termina antes do fim do expediente: desconta o período entre o término da consulta e o final do expediente
-                        excusedTime = Math.max(0, Math.min(contractualEnd, tDocOut) - startAbono);
-                    } else {
-                        excusedTime = Math.max(0, tDocOut - startAbono);
-                    }
-
-                } else {
-                    // Atestado parcial sem batidas de ponto registradas antes/depois
-                    if (contractualStart !== null && contractualEnd !== null) {
-                        const startAbono = Math.max(contractualStart, tDocIn);
-                        const endAbono = Math.min(contractualEnd, tDocOut);
-                        excusedTime = Math.max(0, endAbono - startAbono);
-                    } else {
-                        excusedTime = Math.max(0, tDocOut - tDocIn);
-                    }
-                }
-            }
-
-            const effectiveWorked = workedPre + excusedTime + workedPost;
-            const balance = effectiveWorked - daily;
-
-            return {
-                worked: effectiveWorked,
-                balance: balance,
-                excused: excusedTime,
-                workedPre: workedPre,
-                workedPost: workedPost
-            };
         }
         
         function getTypeIcon(t) { 
