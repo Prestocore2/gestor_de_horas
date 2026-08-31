@@ -515,7 +515,7 @@
                 <p class="text-slate-400 text-xs leading-relaxed">
                     <span class="font-bold text-amber-400">ESTE NÃO É UM SISTEMA OFICIAL DA SUA EMPRESA.</span> 
                     Ferramenta pessoal desenvolvida para auxiliar no controlo de banco de horas.
-                    Atestados parciais abonam a consulta e até 1 hora de deslocamento antes e depois.
+                    O tempo de deslocação em atestados parciais não gera crédito.
                 </p>
             </div>
         </div>
@@ -839,7 +839,7 @@
                         <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">5. Retorno Trabalho</label><input type="time" id="attReturnFromDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
                         <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">6. Saída Final</label><input type="time" id="attWorkOut" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
                     </div>
-                    <p class="mt-3 text-[9px] text-cyan-400/90 italic">* O sistema credita as horas trabalhadas, o período da consulta e até 1 hora de deslocamento antes e depois do atestado.</p>
+                    <p class="mt-3 text-[9px] text-slate-500 italic">* O sistema credita apenas as horas trabalhadas e o tempo de atestado. O tempo de deslocação não é somado.</p>
                 </div>
             </div>
 
@@ -1790,18 +1790,11 @@
                     worked = daily;
                     balance = 0;
                 } else {
-                    const attData = {
-                        isFullDay: false,
-                        attWorkIn: el.attWorkIn.value,
-                        attExitToDoc: el.attExitToDoc.value,
-                        attDocIn: el.attDocIn.value,
-                        attDocOut: el.attDocOut.value,
-                        attReturnFromDoc: el.attReturnFromDoc.value,
-                        attWorkOut: el.attWorkOut.value
-                    };
-                    const resAtt = calcAttestationHours(attData, daily);
-                    worked = resAtt.worked;
-                    balance = resAtt.balance;
+                    const workPre = calculateHoursWorked(el.attWorkIn.value, el.attExitToDoc.value, 0);
+                    const consult = calculateHoursWorked(el.attDocIn.value, el.attDocOut.value, 0);
+                    const workPost = calculateHoursWorked(el.attReturnFromDoc.value, el.attWorkOut.value, 0);
+                    worked = workPre + consult + workPost;
+                    balance = worked - daily;
                 }
             } else if (['vacation', 'holiday', 'suspensao'].includes(type)) {
                 worked = 0; balance = 0;
@@ -1954,8 +1947,11 @@
                 if (data.isFullDay) {
                     res = { balance: 0, worked: daily };
                 } else {
-                    const resAtt = calcAttestationHours(data, daily);
-                    res = { balance: resAtt.balance, worked: resAtt.worked };
+                    const workPre = calculateHoursWorked(data.attWorkIn, data.attExitToDoc, 0);
+                    const consult = calculateHoursWorked(data.attDocIn, data.attDocOut, 0);
+                    const workPost = calculateHoursWorked(data.attReturnFromDoc, data.attWorkOut, 0);
+                    const worked = workPre + consult + workPost;
+                    res = { balance: worked - daily, worked };
                 }
             } else if (['vacation', 'holiday', 'suspensao'].includes(data.type)) {
                 res = { balance: 0, worked: 0 };
@@ -2707,38 +2703,6 @@
             if (endMins < startMins) endMins += 1440;
             const worked = endMins - startMins - lunchMinutes;
             return Math.max(0, worked); 
-        }
-
-        function calcAttestationHours(attData, daily) {
-            if (!attData) return { worked: 0, balance: 0 };
-            if (attData.isFullDay) {
-                return { worked: daily, balance: 0 };
-            }
-
-            const workPre = calculateHoursWorked(attData.attWorkIn, attData.attExitToDoc, 0);
-            const consult = calculateHoursWorked(attData.attDocIn, attData.attDocOut, 0);
-            const workPost = calculateHoursWorked(attData.attReturnFromDoc, attData.attWorkOut, 0);
-
-            // Abono de até 1 hora (60 min) antes do atestado (deslocamento de ida)
-            let transitPre = 0;
-            if (attData.attExitToDoc && attData.attDocIn) {
-                transitPre = Math.min(60, calculateHoursWorked(attData.attExitToDoc, attData.attDocIn, 0));
-            } else if (attData.attDocIn && !attData.attWorkIn && !attData.attExitToDoc) {
-                transitPre = 60;
-            }
-
-            // Abono de até 1 hora (60 min) depois do atestado (deslocamento de volta)
-            let transitPost = 0;
-            if (attData.attDocOut && attData.attReturnFromDoc) {
-                transitPost = Math.min(60, calculateHoursWorked(attData.attDocOut, attData.attReturnFromDoc, 0));
-            } else if (attData.attDocOut && !attData.attReturnFromDoc && !attData.attWorkOut) {
-                transitPost = 60;
-            }
-
-            const worked = workPre + transitPre + consult + transitPost + workPost;
-            const balance = worked - daily;
-
-            return { worked, balance, transitPre, transitPost, consult, workPre, workPost };
         }
         
         function getTypeIcon(t) { 
