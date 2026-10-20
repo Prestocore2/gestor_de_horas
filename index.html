@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-PT" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -448,6 +448,77 @@
             transform: scale(1.03) translateY(-2px);
             z-index: 10;
         }
+
+        /* --- RESPONSIVIDADE E REFINAMENTOS VISUAIS AVANÇADOS --- */
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (max-width: 640px) {
+            .calendar-day {
+                min-height: 60px;
+                border-radius: 0.875rem;
+            }
+            .modal {
+                align-items: flex-end !important;
+                padding: 0 !important;
+            }
+            .modal > .modal-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-bottom-left-radius: 0 !important;
+                border-bottom-right-radius: 0 !important;
+                border-top-left-radius: 1.75rem !important;
+                border-top-right-radius: 1.75rem !important;
+                max-height: 92vh !important;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            #liveTrackerPanel {
+                left: 0.75rem !important;
+                right: 0.75rem !important;
+                bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+                padding: 0.65rem 1rem !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 0.5rem !important;
+                border-radius: 1.25rem !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.35), 0 8px 32px rgba(99, 102, 241, 0.18) !important;
+            }
+            #liveTrackerPanel > div:first-child {
+                display: none !important;
+            }
+            #liveTrackerPanel > div:last-child {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            #liveTrackerPanel > div:last-child > div {
+                border-bottom: none !important;
+                padding-bottom: 0 !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 0.15rem !important;
+            }
+            #liveTrackerPanel > div:last-child > div > div:first-child br {
+                display: none;
+            }
+            #liveTrackerPanel > div:last-child > div > div:first-child {
+                font-size: 8px !important;
+                white-space: nowrap;
+            }
+            #liveTrackerPanel > div:last-child > div > div:last-child {
+                font-size: 0.95rem !important;
+            }
+        }
     </style>
     <link rel="manifest" href="manifest.json">
     <script>
@@ -462,36 +533,36 @@
 </head>
 <body class="bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans leading-relaxed transition-colors duration-500">
 
-    <div class="container mx-auto px-4 py-8 max-w-7xl relative">
+    <div class="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-28 sm:pb-12 max-w-7xl relative">
         
         <!-- HEADER -->
-        <header class="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
-            <div>
-                <h1 class="text-4xl lg:text-5xl font-black tracking-tight uppercase bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">GESTOR DE HORAS <span class="text-[9px] px-2.5 py-1 bg-indigo-500/15 text-indigo-300 font-black rounded-full uppercase tracking-widest border border-indigo-500/25">PRO</span></h1>
-                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.35em] mt-2.5 italic pl-0.5">Gestor de Horas Universal © 2026</p>
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-8 sm:mb-10 gap-5 sm:gap-6 text-center lg:text-left">
+            <div class="flex flex-col items-center lg:items-start">
+                <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight uppercase bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent flex flex-wrap justify-center lg:justify-start items-center gap-2.5 sm:gap-3">GESTOR DE HORAS <span class="text-[9px] px-2.5 py-1 bg-indigo-500/15 text-indigo-300 font-black rounded-full uppercase tracking-widest border border-indigo-500/25">PRO</span></h1>
+                <p class="text-slate-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] sm:tracking-[0.35em] mt-2 italic pl-0.5">Gestor de Horas Universal © 2026</p>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
+            <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-center w-full lg:w-auto">
                 <!-- Ações de Arquivo -->
                 <div class="flex flex-wrap items-center justify-center gap-1.5 p-1.5 file-actions-bg rounded-2xl border border-indigo-500/10 backdrop-blur-sm w-full sm:w-auto">
-                    <button id="saveBackupBtn" class="aurora-btn px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center" title="Faz download de um ficheiro .json com todos os seus dados para guardar no computador">
-                        <i class="fas fa-download sm:mr-1.5 text-amber-400"></i> <span class="hidden sm:inline">Backup</span>
+                    <button id="saveBackupBtn" class="aurora-btn flex-1 sm:flex-initial justify-center px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center gap-1.5" title="Faz download de um ficheiro .json com todos os seus dados para guardar no computador">
+                        <i class="fas fa-download text-amber-400"></i> <span>Backup</span>
                     </button>
-                    <button id="importBtn" class="aurora-btn px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center" title="Importar um ficheiro .json ou .csv de backup para restaurar os dados">
-                        <i class="fas fa-file-import sm:mr-1.5 text-emerald-400"></i> <span class="hidden sm:inline">Importar</span>
+                    <button id="importBtn" class="aurora-btn flex-1 sm:flex-initial justify-center px-3 py-2.5 sm:px-3.5 rounded-xl flex items-center gap-1.5" title="Importar um ficheiro .json ou .csv de backup para restaurar os dados">
+                        <i class="fas fa-file-import text-emerald-400"></i> <span>Importar</span>
                     </button>
-                    <button id="clearBtn" class="aurora-btn px-3 py-2.5 sm:px-2.5 rounded-xl flex items-center hover:!bg-rose-500/20 hover:!border-rose-500/30 hover:!text-rose-400" title="Apaga TODOS os registos do calendário. Recomenda-se fazer backup antes.">
+                    <button id="clearBtn" class="aurora-btn px-3 py-2.5 sm:px-3 rounded-xl flex items-center justify-center hover:!bg-rose-500/20 hover:!border-rose-500/30 hover:!text-rose-400" title="Apaga TODOS os registos do calendário. Recomenda-se fazer backup antes.">
                         <i class="fas fa-trash-alt text-rose-400"></i>
                     </button>
                 </div>
                 
                 <!-- Ações Principais -->
                 <div class="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-                    <button id="saveAllBtn" class="px-4 py-3 sm:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl flex items-center shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider pulse-animation" title="Salva todos os dados no navegador (localStorage)">
-                        <i class="fas fa-save sm:mr-2"></i> <span class="hidden sm:inline">Guardar Tudo</span>
+                    <button id="saveAllBtn" class="flex-1 sm:flex-initial justify-center px-3.5 py-3 sm:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider pulse-animation" title="Salva todos os dados no navegador (localStorage)">
+                        <i class="fas fa-save"></i> <span>Guardar</span>
                     </button>
-                    <button id="exportBtn" class="px-4 py-3 sm:px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl flex items-center shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider" title="Gera um relatório CSV com os dados filtrados por período">
-                        <i class="fas fa-file-export sm:mr-2"></i> <span class="hidden sm:inline">Relatório</span>
+                    <button id="exportBtn" class="flex-1 sm:flex-initial justify-center px-3.5 py-3 sm:px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 text-[10px] font-black uppercase tracking-wider" title="Gera um relatório CSV com os dados filtrados por período">
+                        <i class="fas fa-file-export"></i> <span>Relatório</span>
                     </button>
                     <button id="settingsBtn" class="aurora-btn p-3 rounded-xl" title="Abre as configurações de aparência, backups e módulos visíveis">
                         <i class="fas fa-cog text-violet-400"></i>
@@ -506,82 +577,85 @@
         </header>
 
         <!-- AVISO -->
-        <div id="importantNoticePanel" class="bg-[var(--bg-card)] border-l-4 border-amber-500/60 p-5 rounded-2xl mb-10 flex items-center gap-5 transition-all border border-amber-500/10 hover:border-amber-500/20">
-            <div class="bg-amber-500/10 p-3 rounded-xl text-amber-400 text-2xl">
+        <div id="importantNoticePanel" class="bg-[var(--bg-card)] border-l-4 border-amber-500/60 p-4 sm:p-5 rounded-2xl mb-8 sm:mb-10 flex items-start sm:items-center gap-3.5 sm:gap-5 transition-all border border-amber-500/10 hover:border-amber-500/20">
+            <div class="bg-amber-500/10 p-2.5 sm:p-3 rounded-xl text-amber-400 text-xl sm:text-2xl shrink-0">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div>
-                <h4 class="font-black text-slate-200 uppercase tracking-tight text-sm leading-none mb-1">Aviso Importante</h4>
-                <p class="text-slate-400 text-xs leading-relaxed">
-                    <span class="font-bold text-amber-400">ESTE NÃO É UM SISTEMA OFICIAL DA SUA EMPRESA.</span> 
+                <h4 class="font-black text-[var(--text-primary)] uppercase tracking-tight text-xs sm:text-sm leading-none mb-1">Aviso Importante</h4>
+                <p class="text-[var(--text-secondary)] text-[11px] sm:text-xs leading-relaxed">
+                    <span class="font-bold text-amber-500 dark:text-amber-400">ESTE NÃO É UM SISTEMA OFICIAL DA SUA EMPRESA.</span> 
                     Ferramenta pessoal desenvolvida para auxiliar no controlo de banco de horas.
                     O tempo de deslocação em atestados parciais não gera crédito.
                 </p>
             </div>
         </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-10 sm:mb-12">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8 sm:mb-12">
             <!-- Saldo Anterior -->
-            <div class="kpi-card-1 p-4 sm:p-6 rounded-2xl shadow-lg border border-indigo-500/15 cursor-pointer transition-all group relative overflow-hidden hover:border-indigo-500/30 hover:shadow-indigo-500/10 hover:shadow-xl" id="cardCarriedBalance" title="Clique para editar o Saldo Inicial e Mês">
-                <div class="absolute -right-4 -top-4 text-indigo-500/10 text-6xl transition-transform group-hover:scale-110"><i class="fas fa-history"></i></div>
-                <div class="flex justify-between items-start mb-2 relative z-10">
-                    <p class="text-[var(--text-secondary)] text-[9px] font-black uppercase tracking-widest leading-none">Saldo Anterior <br><span class="lowercase text-[8px] font-normal opacity-75">(acumulado até este mês)</span></p>
-                    <i class="fas fa-pencil-alt text-slate-500 group-hover:text-indigo-400 transition-colors"></i>
+            <div class="kpi-card-1 p-3.5 sm:p-6 rounded-2xl shadow-lg border border-indigo-500/15 cursor-pointer transition-all group relative overflow-hidden hover:border-indigo-500/30 hover:shadow-indigo-500/10 hover:shadow-xl" id="cardCarriedBalance" title="Clique para editar o Saldo Inicial e Mês">
+                <div class="absolute -right-4 -top-4 text-indigo-500/10 text-5xl sm:text-6xl transition-transform group-hover:scale-110"><i class="fas fa-history"></i></div>
+                <div class="flex justify-between items-start mb-1.5 sm:mb-2 relative z-10">
+                    <p class="text-[var(--text-secondary)] text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest leading-tight">Saldo Anterior <br><span class="lowercase text-[7.5px] sm:text-[8px] font-normal opacity-75">(acumulado até este mês)</span></p>
+                    <i class="fas fa-pencil-alt text-xs text-slate-500 group-hover:text-indigo-400 transition-colors"></i>
                 </div>
-                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="carriedBalance">00:00</p>
+                <p class="text-2xl sm:text-4xl font-black text-[var(--text-white-kpi)] tracking-tight relative z-10" id="carriedBalance">00:00</p>
             </div>
             
             <!-- Mês Atual -->
-            <div class="kpi-card-2 p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-500/15 relative overflow-hidden group hover:border-blue-500/30 hover:shadow-blue-500/10 hover:shadow-xl transition-all">
-                <div class="absolute -right-4 -top-4 text-blue-500/10 text-6xl"><i class="fas fa-calendar-check"></i></div>
-                <p class="text-blue-400 text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10">Mês Atual</p>
-                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="monthBalance">00:00</p>
+            <div class="kpi-card-2 p-3.5 sm:p-6 rounded-2xl shadow-lg border border-blue-500/15 relative overflow-hidden group hover:border-blue-500/30 hover:shadow-blue-500/10 hover:shadow-xl transition-all flex flex-col justify-between">
+                <div class="absolute -right-4 -top-4 text-blue-500/10 text-5xl sm:text-6xl"><i class="fas fa-calendar-check"></i></div>
+                <p class="text-blue-500 dark:text-blue-400 text-[8.5px] sm:text-[9px] font-black uppercase mb-1.5 sm:mb-2 tracking-widest leading-none relative z-10">Mês Atual</p>
+                <p class="text-2xl sm:text-4xl font-black text-[var(--text-white-kpi)] tracking-tight relative z-10" id="monthBalance">00:00</p>
             </div>
  
             <!-- Acumulado -->
-            <div class="kpi-card-3 p-4 sm:p-6 rounded-2xl shadow-lg border border-violet-500/15 relative overflow-hidden group hover:border-violet-500/30 hover:shadow-violet-500/10 hover:shadow-xl transition-all">
-                <div class="absolute -right-4 -top-4 text-violet-500/10 text-6xl"><i class="fas fa-chart-pie"></i></div>
-                <p class="text-violet-400 text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10">Acumulado</p>
-                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10" id="accumulatedBalance">00:00</p>
+            <div class="kpi-card-3 p-3.5 sm:p-6 rounded-2xl shadow-lg border border-violet-500/15 relative overflow-hidden group hover:border-violet-500/30 hover:shadow-violet-500/10 hover:shadow-xl transition-all flex flex-col justify-between">
+                <div class="absolute -right-4 -top-4 text-violet-500/10 text-5xl sm:text-6xl"><i class="fas fa-chart-pie"></i></div>
+                <p class="text-violet-500 dark:text-violet-400 text-[8.5px] sm:text-[9px] font-black uppercase mb-1.5 sm:mb-2 tracking-widest leading-none relative z-10">Acumulado</p>
+                <p class="text-2xl sm:text-4xl font-black text-[var(--text-white-kpi)] tracking-tight relative z-10" id="accumulatedBalance">00:00</p>
             </div>
             
             <!-- Banco Anual -->
-            <div class="kpi-card-4 p-4 sm:p-6 rounded-2xl shadow-lg border border-cyan-500/15 relative overflow-hidden group hover:border-cyan-500/30 hover:shadow-cyan-500/10 hover:shadow-xl transition-all">
+            <div class="kpi-card-4 p-3.5 sm:p-6 rounded-2xl shadow-lg border border-cyan-500/15 relative overflow-hidden group hover:border-cyan-500/30 hover:shadow-cyan-500/10 hover:shadow-xl transition-all">
                 <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-20 group-hover:opacity-30 transition-all"></div>
-                <div class="absolute -right-4 -top-4 text-cyan-500/10 text-6xl"><i class="fas fa-gem"></i></div>
-                <p class="text-[var(--text-secondary)] text-[9px] font-black uppercase mb-2 tracking-widest leading-none relative z-10" id="yearlyTitle">Banco 2026</p>
-                <p class="text-4xl font-black text-[var(--text-white-kpi)] relative z-10 mb-1" id="yearlyBalance">00:00</p>
-                <p class="text-[10px] text-[var(--text-secondary)] font-bold relative z-10 uppercase tracking-wider">
-                    Créditos: <span id="yearlyRequired" class="text-emerald-400 font-black">+00:00</span> 
-                    <span class="text-slate-500 mx-1">|</span> 
-                    Atrasos: <span id="yearlyAtrasos" class="text-rose-400 font-black">-00:00</span>
+                <div class="absolute -right-4 -top-4 text-cyan-500/10 text-5xl sm:text-6xl"><i class="fas fa-gem"></i></div>
+                <p class="text-[var(--text-secondary)] text-[8.5px] sm:text-[9px] font-black uppercase mb-1.5 sm:mb-2 tracking-widest leading-none relative z-10" id="yearlyTitle">Banco 2026</p>
+                <p class="text-2xl sm:text-4xl font-black text-[var(--text-white-kpi)] tracking-tight relative z-10 mb-1" id="yearlyBalance">00:00</p>
+                <p class="text-[8.5px] sm:text-[10px] text-[var(--text-secondary)] font-bold relative z-10 uppercase tracking-wider flex flex-wrap items-center gap-x-1">
+                    <span>Créd: <span id="yearlyRequired" class="text-emerald-500 dark:text-emerald-400 font-black">+00:00</span></span>
+                    <span class="text-slate-500 hidden sm:inline">|</span> 
+                    <span>Atr: <span id="yearlyAtrasos" class="text-rose-500 dark:text-rose-400 font-black">-00:00</span></span>
                 </p>
             </div>
         </div>
 
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12 sm:mb-16">
             <!-- CALENDÁRIO -->
             <div class="lg:col-span-2 glass-panel p-3 sm:p-6 lg:p-8 rounded-2xl">
-                <div class="flex justify-between items-center mb-8">
-                    <button id="prevMonth" class="aurora-btn p-3.5 w-12 h-12 flex items-center justify-center rounded-xl group"><i class="fas fa-chevron-left group-hover:-translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
+                <div class="flex justify-between items-center mb-6 sm:mb-8 gap-2">
+                    <button id="prevMonth" class="aurora-btn p-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl group shrink-0"><i class="fas fa-chevron-left group-hover:-translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
                     
                     <div class="flex flex-col items-center">
-                        <h2 id="currentMonthYear" class="text-2xl lg:text-3xl font-black text-[var(--text-primary)] uppercase tracking-tight text-center"></h2>
+                        <div class="flex items-center gap-2">
+                            <h2 id="currentMonthYear" class="text-xl sm:text-2xl lg:text-3xl font-black text-[var(--text-primary)] uppercase tracking-tight text-center"></h2>
+                            <button id="goToTodayBtn" class="aurora-btn px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider hover:!bg-indigo-500/20" title="Ir para o mês atual">Hoje</button>
+                        </div>
                         <!-- BOTÃO DE BLOQUEIO/DESBLOQUEIO FDS -->
-                        <button id="toggleWeekendsBtn" class="mt-2 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all border border-indigo-500/20 text-slate-400 hover:border-indigo-500/40"></button>
+                        <button id="toggleWeekendsBtn" class="mt-2 flex items-center justify-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full transition-all border border-indigo-500/20 text-[var(--text-secondary)] hover:border-indigo-500/40"></button>
                     </div>
 
-                    <button id="nextMonth" class="aurora-btn p-3.5 w-12 h-12 flex items-center justify-center rounded-xl group"><i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
+                    <button id="nextMonth" class="aurora-btn p-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl group shrink-0"><i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform text-[var(--accent-blue)]"></i></button>
                 </div>
-                <div class="grid grid-cols-7 gap-1 sm:gap-3 mb-5 text-center text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] sm:tracking-[0.2em] tracking-tighter">
+                <div class="grid grid-cols-7 gap-1 sm:gap-3 mb-3 sm:mb-5 text-center text-[9px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-wider sm:tracking-[0.2em]">
                     <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
                 </div>
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-3"></div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 sm:gap-3"></div>
             </div>
 
             <!-- ANALISE -->
-            <div class="space-y-6">
+            <div id="analysisColumn" class="space-y-6">
                 <!-- PAINEL DISTRIBUIÇÃO -->
                 <div id="chartPanel" class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center group">
                     <h3 class="text-xs font-bold uppercase text-indigo-400 mb-2 tracking-widest w-full text-center">Distribuição Mensal</h3>
@@ -669,21 +743,21 @@
         <!-- ÁREAS DE IMPORTAÇÃO E CONFIGS -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12" id="settingsSection">
             <!-- Coluna 1: Calendário Senac -->
-            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-indigo-500/40 group">
+            <div class="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-indigo-500/40 group">
                 <div>
-                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-indigo-400 transition-colors"><i class="fas fa-calendar-check mr-3 text-indigo-400"></i>Calendário de Eventos</h3>
+                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-[var(--text-primary)] group-hover:text-indigo-400 transition-colors"><i class="fas fa-calendar-check mr-3 text-indigo-400"></i>Calendário de Eventos</h3>
                     <textarea id="importText" class="aurora-input w-full h-24 p-3.5 text-sm rounded-xl no-scrollbar mb-4" placeholder="Cole o texto do comunicado anual..."></textarea>
                 </div>
                 <div>
                     <button id="processImport" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/15 text-xs uppercase tracking-widest text-center transition-all">Processar Texto</button>
-                    <div id="importStatus" class="mt-3 text-[10px] font-bold uppercase text-emerald-400 text-center"></div>
+                    <div id="importStatus" class="mt-3 text-[10px] font-bold uppercase text-emerald-500 dark:text-emerald-400 text-center"></div>
                 </div>
             </div>
 
             <!-- Coluna 2: Ponto Eletrônico -->
-            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-emerald-500/40 group">
+            <div class="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-emerald-500/40 group">
                 <div>
-                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-emerald-400 transition-colors"><i class="fas fa-fingerprint mr-3 text-emerald-400"></i>Ponto Eletrónico</h3>
+                    <h3 class="font-bold text-base mb-4 flex items-center uppercase tracking-tight text-[var(--text-primary)] group-hover:text-emerald-400 transition-colors"><i class="fas fa-fingerprint mr-3 text-emerald-400"></i>Ponto Eletrónico</h3>
                     <textarea id="importClockInText" class="aurora-input w-full h-24 p-3.5 text-sm rounded-xl no-scrollbar mb-4" placeholder="Cole os registos de ponto ou importe o PDF..."></textarea>
                 </div>
                 
@@ -691,72 +765,72 @@
                     <button id="processClockInImport" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/15 text-[11px] uppercase tracking-widest text-center transition-all">Processar Texto</button>
                     
                     <div class="flex items-center gap-2">
-                        <hr class="flex-1 border-slate-700/50">
-                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">OU</span>
-                        <hr class="flex-1 border-slate-700/50">
+                        <hr class="flex-1 border-[var(--border-glow)]">
+                        <span class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">OU</span>
+                        <hr class="flex-1 border-[var(--border-glow)]">
                     </div>
                     
-                    <button id="uploadPdfBtn" class="w-full py-3 bg-[#1a1f3a] text-white font-bold rounded-xl hover:bg-[#1f2545] transition-all text-[11px] uppercase tracking-widest text-center flex justify-center items-center gap-3 border border-indigo-500/15 hover:border-indigo-500/30" title="Importar ficheiro PDF de ponto eletrônico — o sistema lê automaticamente as datas, horários e motivos">
-                        <i class="fas fa-file-pdf text-rose-400 text-lg"></i> Importar Ficheiro PDF
+                    <button id="uploadPdfBtn" class="w-full py-3 bg-[var(--bg-secondary)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--bg-card-hover)] transition-all text-[11px] uppercase tracking-widest text-center flex justify-center items-center gap-3 border border-indigo-500/15 hover:border-indigo-500/30" title="Importar ficheiro PDF de ponto eletrônico — o sistema lê automaticamente as datas, horários e motivos">
+                        <i class="fas fa-file-pdf text-rose-500 dark:text-rose-400 text-lg"></i> Importar Ficheiro PDF
                     </button>
                     <input type="file" id="pdfFileInput" class="hidden" accept=".pdf,.txt">
-                    <div id="importClockInStatus" class="mt-2 text-[10px] font-bold uppercase text-emerald-400 text-center"></div>
+                    <div id="importClockInStatus" class="mt-2 text-[10px] font-bold uppercase text-emerald-500 dark:text-emerald-400 text-center"></div>
                 </div>
             </div>
 
             <!-- Coluna 3: Planeamento -->
-            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-violet-500/40 group">
+            <div class="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between border-t-2 border-t-violet-500/40 group">
                 <div>
-                    <h3 class="font-bold text-base mb-5 flex items-center uppercase tracking-tight text-slate-200 group-hover:text-violet-400 transition-colors"><i class="fas fa-sliders-h mr-3 text-violet-400"></i>Planeamento</h3>
+                    <h3 class="font-bold text-base mb-5 flex items-center uppercase tracking-tight text-[var(--text-primary)] group-hover:text-violet-400 transition-colors"><i class="fas fa-sliders-h mr-3 text-violet-400"></i>Planeamento</h3>
                     
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider" id="labelPreviousBalance">Saldo Anterior</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider" id="labelPreviousBalance">Saldo Anterior</label>
                             <input type="text" id="previousBalance" value="00:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider" id="labelPreviousMonth" title="Mês em que este saldo foi gerado">Mês de Origem</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider" id="labelPreviousMonth" title="Mês em que este saldo foi gerado">Mês de Origem</label>
                             <input type="month" id="previousBalanceMonth" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jornada</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Jornada</label>
                             <input type="time" id="dailyWorkHours" value="08:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Almoço Padrão</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Almoço Padrão</label>
                             <input type="time" id="defaultLunchBreak" value="01:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Entrada Contratual</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Entrada Contratual</label>
                             <input type="time" id="contractualStartTime" value="08:00" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Meta Azul Diária</label>
-                            <input type="time" id="planDailyExtra" value="00:00" class="aurora-input w-full p-2.5 rounded-lg text-sm !border-indigo-500/20 !text-indigo-300">
+                            <label class="block text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">Meta Azul Diária</label>
+                            <input type="time" id="planDailyExtra" value="00:00" class="aurora-input w-full p-2.5 rounded-lg text-sm !border-indigo-500/20 !text-indigo-600 dark:!text-indigo-300">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Início do Plano</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Início do Plano</label>
                             <input type="date" id="planStartDate" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fim do Plano</label>
+                            <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Fim do Plano</label>
                             <input type="date" id="planEndDate" class="aurora-input w-full p-2.5 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>
-                <button id="resetPlanBtn" class="mt-4 w-full py-3.5 border border-slate-700/50 text-slate-400 font-bold rounded-xl hover:bg-[#1a1f3a] hover:text-slate-200 transition-all uppercase text-[10px] tracking-widest text-center">Limpar Planeamento</button>
+                <button id="resetPlanBtn" class="mt-4 w-full py-3.5 border border-[var(--border-glow)] text-[var(--text-secondary)] font-bold rounded-xl hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)] transition-all uppercase text-[10px] tracking-widest text-center">Limpar Planeamento</button>
             </div>
         </div>
 
         <!-- PAINEL DE DATAS SENAC (LEGENDA) -->
-        <div id="senacLegendPanel" class="glass-panel p-6 rounded-2xl mb-16">
-            <h3 class="font-bold text-lg mb-5 flex items-center uppercase tracking-tight text-slate-200"><i class="fas fa-list-ul mr-3 text-amber-400"></i>Datas Oficiais Importadas</h3>
-            <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-5 border-b border-slate-700/30 pb-3">Esta legenda mostra todos os dias que foram processados a partir dos comunicados oficiais.</p>
+        <div id="senacLegendPanel" class="glass-panel p-5 sm:p-6 rounded-2xl mb-12 sm:mb-16">
+            <h3 class="font-bold text-lg mb-3 sm:mb-5 flex items-center uppercase tracking-tight text-[var(--text-primary)]"><i class="fas fa-list-ul mr-3 text-amber-400"></i>Datas Oficiais Importadas</h3>
+            <p class="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-widest mb-5 border-b border-[var(--border-glow)] pb-3">Esta legenda mostra todos os dias que foram processados a partir dos comunicados oficiais.</p>
             
             <div id="senacLegendContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto no-scrollbar pr-2 pb-2">
                 <!-- Preenchido via JS dinamicamente -->
@@ -764,7 +838,7 @@
         </div>
         
         <!-- STATUS DE SALVAMENTO -->
-        <div id="saveStatus" class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold opacity-0 transition-all duration-500 z-40 transform translate-y-10">
+        <div id="saveStatus" class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold opacity-0 transition-all duration-500 z-40 transform translate-y-10 pointer-events-none">
             <i class="fas fa-check-circle mr-2"></i> Dados guardados!
         </div>
 
@@ -794,62 +868,67 @@
     <!-- MODAL DE LANÇAMENTOS -->
     <div id="dayDetailsModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 opacity-0 pointer-events-none modal">
         <div class="modal-content rounded-3xl shadow-2xl w-[95%] sm:w-full max-w-2xl p-5 sm:p-8 m-2 sm:m-4 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modalDayTitle" class="text-2xl font-black text-[var(--text-primary)] tracking-tight italic"></h3>
-                <button id="closeModal" class="text-slate-500 hover:text-rose-400 transition-colors"><i class="fas fa-times-circle fa-xl"></i></button>
+            <div class="w-12 h-1.5 bg-slate-500/30 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-5 sm:mb-6">
+                <h3 id="modalDayTitle" class="text-lg sm:text-2xl font-black text-[var(--text-primary)] tracking-tight italic capitalize"></h3>
+                <button id="closeModal" class="text-slate-500 hover:text-rose-400 transition-colors p-1"><i class="fas fa-times-circle fa-xl"></i></button>
             </div>
             
-            <div class="mb-8">
+            <div class="mb-6 sm:mb-8">
                 <label class="block text-[10px] font-bold uppercase text-[var(--text-secondary)] mb-3 tracking-[0.2em]">Categoria</label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="office"><i class="fas fa-briefcase text-xl text-office"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Trabalho</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="vacation"><i class="fas fa-umbrella-beach text-xl text-vacation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Férias</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="absence"><i class="fas fa-user-times text-xl text-absence text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Falta</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="holiday"><i class="fas fa-flag text-xl text-holiday text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Feriado</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="attestation"><i class="fas fa-hospital-user text-xl text-attestation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Atestado</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="compensation"><i class="fas fa-balance-scale text-xl text-compensation text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none tracking-tighter text-left">Compensar</span></button>
-                    <button class="day-type-btn p-3 rounded-xl border-2 border-transparent flex flex-col items-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="suspensao"><i class="fas fa-ban text-xl text-suspensao text-left"></i><span class="text-[9px] font-black uppercase text-center leading-none text-left">Suspensão</span></button>
+                <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="office"><i class="fas fa-briefcase text-lg sm:text-xl text-office"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none">Trabalho</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="vacation"><i class="fas fa-umbrella-beach text-lg sm:text-xl text-vacation"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none">Férias</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="absence"><i class="fas fa-user-times text-lg sm:text-xl text-absence"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none tracking-tighter">Falta</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="holiday"><i class="fas fa-flag text-lg sm:text-xl text-holiday"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none tracking-tighter">Feriado</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="attestation"><i class="fas fa-hospital-user text-lg sm:text-xl text-attestation"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none tracking-tighter">Atestado</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="compensation"><i class="fas fa-balance-scale text-lg sm:text-xl text-compensation"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none tracking-tighter">Compensar</span></button>
+                    <button class="day-type-btn p-2.5 sm:p-3 rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all" data-type="suspensao"><i class="fas fa-ban text-lg sm:text-xl text-suspensao"></i><span class="text-[8.5px] sm:text-[9px] font-black uppercase text-center leading-none">Suspensão</span></button>
                 </div>
             </div>
-            <div id="periodSelectionContainer" class="mb-6 p-5 bg-[var(--bg-secondary)] rounded-xl border border-amber-500/25 text-left transition-all">
-                <p class="text-[10px] font-bold text-amber-400 uppercase mb-3 tracking-widest flex items-center"><i class="fas fa-copy mr-2"></i> Replicar para vários dias (Lançamento em Bloco)</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-slate-400">De (Início)</label><input type="date" id="rangeStartDate" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
-                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-slate-400">Até (Fim)</label><input type="date" id="rangeEndDate" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+            <div id="periodSelectionContainer" class="mb-6 p-4 sm:p-5 bg-[var(--bg-secondary)] rounded-xl border border-amber-500/25 text-left transition-all">
+                <p class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase mb-3 tracking-widest flex items-center"><i class="fas fa-copy mr-2"></i> Replicar para vários dias (Lançamento em Bloco)</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">De (Início)</label><input type="date" id="rangeStartDate" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">Até (Fim)</label><input type="date" id="rangeEndDate" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
                 </div>
-                <p class="mt-2 text-[9px] text-amber-500/75 italic">* Dica: Mude a data final para aplicar estas configurações a vários dias de uma só vez. Finais de semana requerem que o desbloqueio esteja ativo.</p>
+                <p class="mt-2 text-[9px] text-amber-600/80 dark:text-amber-500/75 italic">* Dica: Mude a data final para aplicar estas configurações a vários dias de uma só vez. Finais de semana requerem que o desbloqueio esteja ativo.</p>
             </div>
 
             <!-- Formulário Profissional Atestado -->
             <div id="attestationForm" class="hidden mb-6 space-y-4">
-                <div class="bg-[var(--bg-secondary)] p-5 rounded-xl border border-cyan-500/20">
+                <div class="bg-[var(--bg-secondary)] p-4 sm:p-5 rounded-xl border border-cyan-500/20">
                     <div class="flex items-center justify-between mb-4">
-                        <p class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Detalhes do Atestado</p>
+                        <p class="text-[10px] font-bold text-cyan-500 dark:text-cyan-400 uppercase tracking-widest">Detalhes do Atestado</p>
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="fullDayAttestation" class="w-4 h-4 rounded text-cyan-500 mr-2 accent-cyan-500">
                             <span class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">Dia Inteiro?</span>
                         </label>
                     </div>
 
-                    <div id="attestationTimeFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[var(--text-primary)]">
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">1. Início Expediente</label><input type="time" id="attWorkIn" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">2. Saída p/ Consulta</label><input type="time" id="attExitToDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-cyan-400 font-bold italic">3. Início Atestado</label><input type="time" id="attDocIn" class="aurora-input w-full p-3 rounded-lg text-sm !border-cyan-500/30"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-cyan-400 font-bold italic">4. Fim Atestado</label><input type="time" id="attDocOut" class="aurora-input w-full p-3 rounded-lg text-sm !border-cyan-500/30"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">5. Retorno Trabalho</label><input type="time" id="attReturnFromDoc" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)]">6. Saída Final</label><input type="time" id="attWorkOut" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                    <div id="attestationTimeFields" class="grid grid-cols-2 gap-3 sm:gap-4 text-[var(--text-primary)]">
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)]">1. Início Expediente</label><input type="time" id="attWorkIn" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)]">2. Saída p/ Consulta</label><input type="time" id="attExitToDoc" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-cyan-500 dark:text-cyan-400 italic">3. Início Atestado</label><input type="time" id="attDocIn" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm !border-cyan-500/30"></div>
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-cyan-500 dark:text-cyan-400 italic">4. Fim Atestado</label><input type="time" id="attDocOut" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm !border-cyan-500/30"></div>
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)]">5. Retorno Trabalho</label><input type="time" id="attReturnFromDoc" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                        <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)]">6. Saída Final</label><input type="time" id="attWorkOut" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
                     </div>
-                    <p class="mt-3 text-[9px] text-slate-500 italic">* O sistema credita apenas as horas trabalhadas e o tempo de atestado. O tempo de deslocação não é somado.</p>
+                    <p class="mt-3 text-[9px] text-[var(--text-secondary)] italic">* O sistema credita apenas as horas trabalhadas e o tempo de atestado. O tempo de deslocação não é somado.</p>
                 </div>
             </div>
 
             <!-- Horários Manuais (Trabalho Normal) -->
-            <div id="workHoursContainer" class="space-y-4 mb-6 hidden">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Entrada</label><input type="time" id="startTime" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
-                    <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Saída</label><input type="time" id="endTime" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+            <div id="workHoursContainer" class="space-y-3 sm:space-y-4 mb-6 hidden">
+                <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
+                    <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">Entrada</label><input type="time" id="startTime" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                    <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">Saída</label><input type="time" id="endTime" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
+                    <div class="space-y-1"><label class="text-[9.5px] sm:text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">Almoço</label><input type="time" id="lunchBreak" class="aurora-input w-full p-2.5 sm:p-3 rounded-lg text-sm"></div>
                 </div>
-                <div class="space-y-1"><label class="text-[10px] font-bold uppercase text-[var(--text-secondary)] tracking-widest">Almoço</label><input type="time" id="lunchBreak" class="aurora-input w-full p-3 rounded-lg text-sm"></div>
+                <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span class="text-[9px] font-bold uppercase text-[var(--text-secondary)] mr-1"><i class="fas fa-bolt text-amber-400 mr-1"></i>Preencher Padrão:</span>
+                    <button type="button" id="quickFillStandardBtn" class="aurora-btn px-2.5 py-1 rounded-lg text-[9px] hover:!bg-indigo-500/20">Jornada Contratual</button>
+                </div>
             </div>
 
             <!-- Planeamento de Hora Extra Customizada do Dia -->
@@ -1073,7 +1152,8 @@
             setTimeout(() => t.classList.add('-translate-y-32'), 3500);
         }
 
-        let currentDate = new Date(2026, 0, 1);
+        let currentDate = new Date();
+        currentDate.setDate(1);
         let selectedDay = null;
         let workData = {};
         let holidays = {};
@@ -1129,6 +1209,7 @@
             currentMonthYear: document.getElementById('currentMonthYear'),
             prevMonthBtn: document.getElementById('prevMonth'),
             nextMonthBtn: document.getElementById('nextMonth'),
+            goToTodayBtn: document.getElementById('goToTodayBtn'),
             toggleWeekendsBtn: document.getElementById('toggleWeekendsBtn'),
             
             importText: document.getElementById('importText'),
@@ -1249,6 +1330,72 @@
         function setupEventListeners() {
             el.prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); updateChart(); updateBalances(); };
             el.nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); updateChart(); updateBalances(); };
+            if (el.goToTodayBtn) {
+                el.goToTodayBtn.onclick = () => {
+                    const now = new Date();
+                    currentDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    renderCalendar();
+                    updateChart();
+                    updateBalances();
+                    showNotification('Mês atual selecionado.', 'success');
+                };
+            }
+
+            // Suporte a gestos de Swipe (deslizar) no calendário para mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            if (el.calendarGrid) {
+                el.calendarGrid.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                el.calendarGrid.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 65) {
+                        if (diff > 0) {
+                            currentDate.setMonth(currentDate.getMonth() + 1);
+                        } else {
+                            currentDate.setMonth(currentDate.getMonth() - 1);
+                        }
+                        renderCalendar();
+                        updateChart();
+                        updateBalances();
+                    }
+                }, { passive: true });
+            }
+
+            const quickFillBtn = document.getElementById('quickFillStandardBtn');
+            if (quickFillBtn) {
+                quickFillBtn.onclick = () => {
+                    const cStart = (el.contractualStartTimeInput && el.contractualStartTimeInput.value) || '08:00';
+                    const dailyMins = timeToMinutes(el.dailyWorkHoursInput.value || '08:00');
+                    const lunchMins = timeToMinutes(el.defaultLunchBreak.value || '01:00');
+                    const endMins = timeToMinutes(cStart) + dailyMins + lunchMins;
+                    el.startTimeInput.value = cStart;
+                    el.lunchBreakInput.value = minutesToTime(lunchMins);
+                    el.endTimeInput.value = minutesToTime(endMins % 1440);
+                    calculateDayHours();
+                };
+            }
+
+            // Fechar modais com tecla ESC ou clique no fundo (backdrop)
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeDayModal();
+                    closeExportModal();
+                    closeClearModal();
+                    closeSettingsModal();
+                }
+            });
+            [el.dayDetailsModal, el.exportModal, el.clearModal, el.settingsModal].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('opacity-0', 'pointer-events-none');
+                        }
+                    });
+                }
+            });
             
             el.toggleWeekendsBtn.onclick = () => {
                 blockWeekends = !blockWeekends;
@@ -1461,7 +1608,10 @@
                 applyViewMode();
                 applyPanelVisibilities();
                 
-                if (safeStorage.getItem(STORAGE_KEYS.DARK_MODE) === 'true') {
+                const savedDarkMode = safeStorage.getItem(STORAGE_KEYS.DARK_MODE);
+                if (savedDarkMode === 'false') {
+                    document.documentElement.classList.remove('dark');
+                } else {
                     document.documentElement.classList.add('dark');
                 }
                 return true;
@@ -1591,32 +1741,41 @@
                 if (data.notes) dayTooltip += `\nObservações: ${data.notes}`;
                 dayEl.title = dayTooltip;
                 
-                let html = `<div class="flex justify-between items-start"><span class="text-xs font-black text-[var(--text-primary)]">${d}</span>`;
+                let html = `<div class="flex justify-between items-start"><span class="text-[11px] sm:text-xs font-black text-[var(--text-primary)] leading-none">${d}</span>`;
                 if (payoffDateAccumulatedKey && k === payoffDateAccumulatedKey) {
-                    html += `<div class="absolute -top-2.5 -right-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-1 border border-white dark:border-slate-950"><span>QUITA ATUAL! 💜</span></div>`;
+                    html += `<div class="absolute -top-2 -right-1 sm:-top-2.5 sm:-right-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[7px] sm:text-[8px] font-black px-1.5 sm:px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-0.5 border border-white dark:border-slate-950"><span class="hidden sm:inline">QUITA ATUAL! </span><span>💜</span></div>`;
                 } else if (payoffDateYearlyKey && k === payoffDateYearlyKey) {
-                    html += `<div class="absolute -top-2.5 -right-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-1 border border-white dark:border-slate-950"><span>QUITA ANUAL! 💎</span></div>`;
+                    html += `<div class="absolute -top-2 -right-1 sm:-top-2.5 sm:-right-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-[7px] sm:text-[8px] font-black px-1.5 sm:px-2 py-0.5 rounded-full shadow-md z-30 animate-bounce flex items-center gap-0.5 border border-white dark:border-slate-950"><span class="hidden sm:inline">QUITA ANUAL! </span><span>💎</span></div>`;
                 }
-                if(data.type) html += `<i class="fas ${getTypeIcon(data.type)} text-[10px] ${getTypeColor(data.type)}"></i>`;
-                if(data.notes && data.notes.trim() !== '') html += `<i class="fas fa-thumbtack text-[10px] text-amber-500 ml-1 drop-shadow-md" title="Tem anotações"></i>`;
+                const shortTypeLabels = {
+                    office: 'Trabalho',
+                    vacation: 'Férias',
+                    absence: 'Falta',
+                    holiday: 'Feriado',
+                    attestation: 'Atestado',
+                    compensation: 'Compensar',
+                    suspensao: 'Suspensão'
+                };
+                if(data.type) html += `<i class="fas ${getTypeIcon(data.type)} text-[9px] sm:text-[10px] ${getTypeColor(data.type)}"></i>`;
+                if(data.notes && data.notes.trim() !== '') html += `<i class="fas fa-thumbtack text-[8px] sm:text-[10px] text-amber-500 ml-0.5 sm:ml-1 drop-shadow-md" title="Tem anotações"></i>`;
                 html += `</div>`;
                 
-                if(data.type) html += `<div class="mt-1 text-[9px] font-bold uppercase truncate ${getTypeColor(data.type)}">${data.type}</div>`;
+                if(data.type) html += `<div class="hidden sm:block mt-1 text-[8.5px] font-bold uppercase truncate ${getTypeColor(data.type)}">${shortTypeLabels[data.type] || data.type}</div>`;
                 
                 const hasCustomPlan = data.customPlanDailyExtra && data.customPlanDailyExtra !== "00:00";
                 if(!isFDS && (planExtra > 0 || hasCustomPlan) && planStart && planLimit && compareDate >= planStart && compareDate <= planLimit && (!data.type || data.type === 'office')) {
                     const displayExtra = hasCustomPlan ? timeToMinutes(data.customPlanDailyExtra) : planExtra;
-                    html += `<div class="mt-1 text-[8px] font-black text-plan uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/20 px-1 rounded"><i class="fas fa-clock mr-1"></i>+${minutesToTime(displayExtra)}</div>`;
+                    html += `<div class="mt-0.5 sm:mt-1 text-[7px] sm:text-[8px] font-black text-plan uppercase tracking-tighter bg-blue-500/10 dark:bg-blue-900/20 px-1 rounded truncate"><i class="fas fa-clock mr-0.5 sm:mr-1 hidden sm:inline"></i>+${minutesToTime(displayExtra)}</div>`;
                 }
                 
                 if(data.isCompensationPeriod && !isFDS) {
-                    const compLabel = data.compensationOf ? `REF: ${data.compensationOf}` : 'META OFICIAL';
-                    html += `<div class="mt-1 text-[8.5px] font-black text-pink-600 dark:text-pink-400 uppercase tracking-tighter bg-pink-100/50 dark:bg-pink-900/40 border border-pink-200/80 dark:border-pink-800/50 px-1.5 py-0.5 rounded-md shadow-sm"><i class="fas fa-bullseye mr-1"></i>${compLabel}</div>`;
+                    const compLabel = data.compensationOf ? `REF: ${data.compensationOf}` : 'META';
+                    html += `<div class="hidden sm:block mt-1 text-[8px] font-black text-pink-600 dark:text-pink-400 uppercase tracking-tighter bg-pink-100/50 dark:bg-pink-900/40 border border-pink-200/80 dark:border-pink-800/50 px-1.5 py-0.5 rounded-md shadow-sm truncate"><i class="fas fa-bullseye mr-1"></i>${compLabel}</div>`;
                 }
 
                 const { balance } = getDayBalance(data, date);
                 if(balance !== 0) {
-                    html += `<div class="mt-auto text-right text-[10px] font-black ${balance>=0?'text-emerald-500':'text-rose-500'}">${balance>0?'+':''}${minutesToTime(balance)}</div>`;
+                    html += `<div class="mt-auto text-right text-[8.5px] sm:text-[10px] font-black leading-none pt-1 ${balance>=0?'text-emerald-500':'text-rose-500'}">${balance>0?'+':''}${minutesToTime(balance)}</div>`;
                 }
                 
                 dayEl.innerHTML = html;
@@ -2800,8 +2959,8 @@
             if (el.senacLegendPanel) el.senacLegendPanel.style.display = appSettings.showLegend !== false ? 'block' : 'none';
             if (el.liveTrackerPanel) el.liveTrackerPanel.style.display = appSettings.showTracker !== false ? 'flex' : 'none';
             
-            const analysisColumn = document.querySelector('.space-y-8.text-left');
-            const calendarColumn = document.querySelector('.lg\\:col-span-2.glass-panel');
+            const analysisColumn = document.getElementById('analysisColumn');
+            const calendarColumn = document.querySelector('.lg\\:col-span-2.glass-panel, .lg\\:col-span-3.glass-panel');
             
             if (analysisColumn && calendarColumn) {
                 const showAnalysis = (appSettings.showChart !== false) || (appSettings.showSimulator !== false);
